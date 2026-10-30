@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zvířátkové šógi</title>
+<meta name="description" content="Malá japonská hra pro dva na jednom odkazu. Chyť soupeřova lva, nebo s tím svým doběhni do cíle.">
+<meta name="theme-color" content="#F3EBDD">
+<meta property="og:title" content="Zvířátkové šógi">
+<meta property="og:description" content="Výzva na malou japonskou hru pro dva. Chyť lva!">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='12' fill='%23F8EAD0' stroke='%232D4C8F' stroke-width='5'/%3E%3Ccircle cx='32' cy='33' r='16' fill='%23E39B3A' stroke='%2326201C' stroke-width='3'/%3E%3Ccircle cx='32' cy='35' r='9' fill='%23F6D08A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --washi: #F3EBDD; --washi-2: #EADFCB; --washi-3: #E1D3BA;
+    --sumi: #26201C; --sumi-2: #5B4F46; --line: #CDBFA6;
+    --ai: #2D4C8F; --ai-soft: #DDE4F3;
+    --kaki: #C9502A; --kaki-soft: #F7DCCD;
+    --tatami: #D8CF9E; --tatami-2: #CFC48F; --tatami-line: #AFA266; --heri: #2A2D40;
+    --wood: #F8EAD0; --wood-2: #EFD9B0;
+    --sakura: #F2A9B8; --hanko: #C42F28; --matcha: #6E8F2E;
+    --shadow: 0 1px 1px rgba(60,40,20,.18), 0 4px 10px -2px rgba(60,40,20,.28);
+    --ease: cubic-bezier(.16,1,.3,1);
+    --bw: min(calc(100vw - 32px), 372px, calc((100dvh - 316px) * .75));
+    --display: "Dela Gothic One", "Zen Maru Gothic", system-ui, sans-serif;
+    --ui: "Zen Maru Gothic", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --washi: #1D1916; --washi-2: #27211C; --washi-3: #322A23;
+      --sumi: #F2E9DB; --sumi-2: #BDAF9E; --line: #4A3F35;
+      --ai-soft: #26304A; --kaki-soft: #45291F;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100dvh; background: var(--washi); color: var(--sumi);
+    font: 500 16px/1.45 var(--ui); -webkit-tap-highlight-color: transparent;
+    background-image: radial-gradient(circle at 20% 10%, rgba(255,255,255,.35), transparent 40%), radial-gradient(circle at 90% 80%, rgba(201,80,42,.06), transparent 45%);
+  }
+  ::selection { background: var(--sakura); color: #26201C; }
+  :focus-visible { outline: 3px solid var(--ai); outline-offset: 3px; border-radius: 10px; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  [hidden] { display: none !important; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---------- shell ---------- */
+  .app { max-width: 460px; margin: 0 auto; padding: max(10px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom)); }
+  header.top { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+  .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; min-width: 0; }
+  .brand svg { width: 30px; height: 30px; flex: none; }
+  .brand b { font: 400 17px/1 var(--display); letter-spacing: -.01em; white-space: nowrap; }
+  .score { margin-left: auto; font-weight: 700; font-size: 14px; color: var(--sumi-2); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .iconbtn { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 0; background: transparent; display: grid; place-items: center; }
+  .iconbtn:hover { background: var(--washi-2); }
+  .iconbtn svg { width: 24px; height: 24px; }
+  .score + .iconbtn { margin-left: 0; }
+  @media (max-width: 520px) { .top.has-score .brand b { display: none; } }
+
+  /* ---------- buttons & forms ---------- */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 12px 20px;
+    border-radius: 14px; border: 2px solid var(--sumi); background: var(--washi); font-weight: 700; font-size: 16px; text-decoration: none; color: var(--sumi);
+    transition: transform .18s var(--ease), background .18s;
+  }
+  .btn:hover { background: var(--washi-2); }
+  .btn:active { transform: translateY(1px) scale(.99); }
+  .btn.primary { background: var(--sumi); color: var(--washi); }
+  .btn.primary:hover { background: color-mix(in srgb, var(--sumi) 84%, var(--washi)); }
+  .btn.ai { background: var(--ai); border-color: var(--ai); color: #fff; }
+  .btn.kaki { background: var(--kaki); border-color: var(--kaki); color: #fff; }
+  .btn.quiet { border-color: transparent; background: transparent; text-decoration: underline; text-underline-offset: 4px; min-height: 44px; font-weight: 700; color: var(--sumi-2); }
+  .btn.quiet:hover { color: var(--sumi); background: transparent; }
+  .btn:disabled { opacity: .45; cursor: default; transform: none; }
+  .btn svg { width: 20px; height: 20px; flex: none; }
+  .stack { display: grid; gap: 10px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  label.f { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
+  label.f small { font-weight: 500; color: var(--sumi-2); }
+  .in {
+    width: 100%; min-height: 50px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--line); background: var(--washi);
+    font-size: 16px; font-weight: 500; caret-color: var(--kaki);
+  }
+  .in:focus { outline: none; border-color: var(--sumi); }
+  .in::placeholder { color: var(--sumi-2); opacity: .8; }
+  select.in { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 8l5 5 5-5' fill='none' stroke='%235B4F46' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 20px; padding-right: 40px; }
+  textarea.in { resize: none; min-height: 120px; line-height: 1.45; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 14px; background: var(--washi-2); }
+  .seg button { min-height: 44px; border: 0; border-radius: 10px; background: transparent; font-weight: 700; }
+  .seg button[aria-pressed="true"] { background: var(--washi); box-shadow: var(--shadow); }
+
+  /* ---------- seats & trays ---------- */
+  .seat { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; transition: background .3s; }
+  .seat.on { background: color-mix(in srgb, var(--pc) 13%, transparent); }
+  .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .disc { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--pc); color: #fff; font: 400 15px/1 var(--display); flex: none; position: relative; }
+  .seat.on .disc::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--pc); animation: breathe 1.8s ease-in-out infinite; }
+  .who .nm { font-weight: 900; font-size: 15px; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .who .tag { display: block; font-weight: 700; font-size: 12px; color: var(--sumi-2); }
+  .seat.on .who .tag { color: var(--pc); }
+  :root:not([data-theme="light"]) .seat.on .who .tag { filter: brightness(1.0); }
+  .tray {
+    display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-height: 52px; padding: 4px 6px; border-radius: 12px;
+    background: linear-gradient(180deg, var(--wood-2), #E6CB98); box-shadow: inset 0 2px 4px rgba(90,60,20,.25);
+  }
+  .tray .empty { font-size: 12px; font-weight: 700; color: #7B6440; padding: 0 6px; }
+  .hp { width: 44px; height: 44px; padding: 0; border: 0; background: transparent; position: relative; flex: none; border-radius: 10px; }
+  .hp:disabled { cursor: default; }
+  .hp.sel .pc { transform: translateY(-5px); }
+  .hp.sel .tile { box-shadow: 0 0 0 3px var(--sumi), 0 8px 14px -4px rgba(60,40,20,.45); }
+  .hp .pc { width: 100%; height: 100%; transition: transform .2s var(--ease); }
+  .hp.dim { opacity: .55; }
+  .trayrow { display: grid; grid-template-columns: minmax(0, auto) 1fr; gap: 8px; align-items: center; }
+
+  /* ---------- board ---------- */
+  .stage { position: relative; width: var(--bw); margin: 6px auto; container-type: inline-size; }
+  .board {
+    position: relative; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); aspect-ratio: 3 / 4;
+    padding: 7px; border-radius: 14px; background: var(--heri);
+    box-shadow: 0 2px 2px rgba(20,15,10,.25), 0 16px 34px -14px rgba(40,25,10,.55);
+  }
+  .board::before { /* tatami */
+    content: ""; position: absolute; inset: 7px; border-radius: 8px; pointer-events: none;
+    background:
+      repeating-linear-gradient(90deg, rgba(120,105,50,.13) 0 1px, transparent 1px 5px),
+      linear-gradient(180deg, var(--tatami), var(--tatami-2));
+  }
+  .cell { position: relative; border: 0; padding: 0; background: transparent; display: grid; place-items: center; touch-action: manipulation; }
+  .cell::before { content: ""; position: absolute; inset: 0; border-right: 1.5px solid var(--tatami-line); border-bottom: 1.5px solid var(--tatami-line); pointer-events: none; }
+  .cell:nth-child(3n)::before { border-right: 0; }
+  .cell:nth-last-child(-n+3)::before { border-bottom: 0; }
+  .cell.goal-them::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+  .cell.goal-them::after { background: linear-gradient(180deg, color-mix(in srgb, var(--opc) 16%, transparent), transparent 80%); }
+  .cell.from::after { content: ""; position: absolute; inset: 22%; border-radius: 50%; border: 2px dashed color-mix(in srgb, var(--mpc) 70%, transparent); }
+  .cell.to { background: color-mix(in srgb, var(--mpc) 18%, transparent); }
+  .cell .pc { width: 86%; height: 86%; }
+  .cell.target .mark { position: absolute; width: 26%; height: 26%; border-radius: 50%; background: color-mix(in srgb, var(--sumi) 30%, transparent); pointer-events: none; animation: pop .22s var(--ease) both; }
+  :root:not([data-theme="light"]) .cell.target .mark { background: rgba(38,32,28,.32); }
+  .cell.target.cap .mark { width: 94%; height: 94%; border-radius: 18%; background: transparent; border: 4px solid var(--hanko); }
+  .cell.sel .pc { transform: translateY(-6px); }
+  .cell.sel .tile { box-shadow: 0 0 0 3px var(--sumi), 0 12px 18px -6px rgba(60,40,20,.5); }
+  .cell .pc { transition: transform .2s var(--ease); }
+  .board.locked .cell { cursor: default; }
+
+  /* ---------- pieces ---------- */
+  .pc { position: relative; display: block; pointer-events: none; }
+  .tile {
+    position: absolute; inset: 0; border-radius: 19%; background: linear-gradient(160deg, #FCF2DF 0%, var(--wood) 45%, var(--wood-2) 100%);
+    border: 3px solid var(--pc); box-shadow: var(--shadow); overflow: hidden; transition: box-shadow .2s;
+  }
+  .tile.down { transform: rotate(180deg); }
+  .tile::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 8%; background: var(--pc); }
+  .tile svg.art { position: absolute; left: 13%; top: 8%; width: 74%; height: 74%; }
+  .tile i { position: absolute; width: 9%; height: 9%; border-radius: 50%; background: var(--pc); transform: translate(-50%, -50%); opacity: .85; }
+  .own-x { --pc: var(--ai); }
+  .own-o { --pc: var(--kaki); }
+  .hp .tile { border-width: 2px; }
+  .hp .tile i { display: none; }
+
+  /* ---------- status ---------- */
+  .status { text-align: center; padding: 8px 4px 2px; min-height: 64px; }
+  .status h2 { margin: 0; font: 400 21px/1.15 var(--display); letter-spacing: -.01em; text-wrap: balance; }
+  .status p { margin: 4px 0 0; font-size: 14px; color: var(--sumi-2); font-weight: 700; text-wrap: balance; }
+  .acts { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .acts .btn { min-height: 44px; padding: 8px 16px; font-size: 15px; }
+  .net { text-align: center; font-weight: 700; font-size: 13px; color: var(--hanko); margin-top: 6px; }
+
+  /* ---------- end ---------- */
+  .hanko {
+    position: absolute; z-index: 5; left: 50%; top: 50%; width: 46%; aspect-ratio: 1; margin: -23% 0 0 -23%; border-radius: 50%;
+    display: grid; place-items: center; text-align: center; color: var(--hanko); border: 5px solid var(--hanko); background: rgba(250,240,225,.82);
+    font: 400 7.2cqw/1.05 var(--display); transform: rotate(-11deg); pointer-events: none;
+    box-shadow: inset 0 0 0 4px rgba(250,240,225,.82), inset 0 0 0 7px var(--hanko);
+  }
+  .hanko.slam { animation: slam .42s var(--ease) both; }
+  .result { margin-top: 8px; padding: 16px; border-radius: 18px; background: var(--washi-2); text-align: center; }
+  .result h2 { margin: 0; font: 400 24px/1.12 var(--display); text-wrap: balance; }
+  .result .l2 { margin: 6px 0 0; font-weight: 900; font-size: 17px; }
+  .result .l2.win { color: var(--kaki); }
+  .result .meta { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: var(--sumi-2); }
+  .ticket { margin: 12px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--washi); border: 2px dashed var(--line); text-align: left; }
+  .ticket small { display: block; font-weight: 700; font-size: 12px; color: var(--sumi-2); letter-spacing: .04em; }
+  .ticket b { display: block; font-size: 16px; }
+  .ticket .ser { margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--sumi-2); font-variant-numeric: tabular-nums; }
+  .result .stack { margin-top: 12px; }
+
+  /* ---------- intro / setup / share / info ---------- */
+  .page { padding-top: 10px; }
+  .page h1 { margin: 6px 0 8px; font: 400 clamp(28px, 8.4vw, 38px)/1.06 var(--display); letter-spacing: -.02em; text-wrap: balance; }
+  .page h1 em { font-style: normal; color: var(--kaki); }
+  .lede { margin: 0 0 16px; color: var(--sumi-2); font-weight: 700; text-wrap: pretty; }
+  .cast { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 16px; }
+  .cast figure { margin: 0; text-align: center; }
+  .cast .pc { width: 100%; aspect-ratio: 1; }
+  .cast figcaption { margin-top: 6px; font-size: 12px; font-weight: 700; line-height: 1.25; color: var(--sumi-2); }
+  .cast figcaption b { display: block; font-size: 14px; color: var(--sumi); }
+  .cast.bob .pc { animation: bob 2.6s ease-in-out infinite; }
+  .cast.bob figure:nth-child(2) .pc { animation-delay: -.6s; }
+  .cast.bob figure:nth-child(3) .pc { animation-delay: -1.2s; }
+  .cast.bob figure:nth-child(4) .pc { animation-delay: -1.8s; }
+  .card { padding: 16px; border-radius: 18px; background: var(--washi-2); margin-bottom: 14px; }
+  .card small { display: block; font-weight: 700; font-size: 12px; letter-spacing: .04em; color: var(--sumi-2); }
+  .card b { display: block; font-size: 18px; line-height: 1.3; }
+  .vs { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-weight: 900; }
+  .vs .disc { width: 30px; height: 30px; font-size: 13px; }
+  .vs span.x { color: var(--sumi-2); font-weight: 700; }
+  .recent { margin-top: 26px; }
+  .recent h2 { margin: 0 0 8px; font-size: 14px; color: var(--sumi-2); }
+  .recent a { display: flex; justify-content: space-between; gap: 10px; min-height: 48px; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--washi-2); color: inherit; text-decoration: none; font-weight: 700; margin-bottom: 6px; }
+  .recent a span { font-size: 13px; color: var(--sumi-2); }
+  .fold { position: relative; padding: 18px 16px; border-radius: 18px; background: var(--wood); color: #26201C; box-shadow: var(--shadow); margin: 6px 0 14px; }
+  .fold .to { font-weight: 900; }
+  .fold textarea { background: #FCF4E4; border-color: #DCC497; color: #26201C; }
+
+  /* ---------- sheet (help / menu) ---------- */
+  dialog.sheet { border: 0; padding: 0; margin: auto auto 0; width: min(100%, 520px); max-height: 88dvh; border-radius: 22px 22px 0 0; background: var(--washi); color: var(--sumi); box-shadow: 0 -10px 40px rgba(0,0,0,.25); }
+  dialog.sheet::backdrop { background: rgba(30,22,16,.45); }
+  dialog.sheet[open] { animation: up .32s var(--ease); }
+  @media (min-width: 640px) { dialog.sheet { margin: auto; border-radius: 22px; } }
+  .sheet .in-sheet { padding: 18px 18px max(22px, env(safe-area-inset-bottom)); overflow: auto; max-height: 88dvh; }
+  .sheet header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .sheet h2 { margin: 0; font: 400 22px/1.1 var(--display); }
+  .rules { display: grid; gap: 10px; }
+  .rule { display: grid; grid-template-columns: 58px 1fr; gap: 12px; align-items: center; }
+  .rule .pc { width: 58px; height: 58px; }
+  .rule p { margin: 0; font-size: 15px; }
+  .rule p b { font-weight: 900; }
+  .rules ol { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 15px; }
+  .rules ol li::marker { font-weight: 900; color: var(--kaki); }
+  .menu { display: grid; gap: 8px; }
+  .menu .btn { justify-content: flex-start; }
+
+  .toast { position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 50; padding: 12px 18px; border-radius: 14px; background: var(--sumi); color: var(--washi); font-weight: 700; box-shadow: var(--shadow); max-width: calc(100vw - 32px); text-align: center; animation: pop .25s var(--ease); }
+
+  /* ---------- effects layer ---------- */
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 40; perspective: 900px; }
+  .ghost { position: fixed; transform-style: preserve-3d; will-change: transform; }
+  .ghost .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .ghost .face.back { transform: rotateY(180deg); }
+  .ghost .pc { width: 100%; height: 100%; }
+  .burst { position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; overflow: visible; }
+
+  /* ---------- desktop ---------- */
+  .aside { display: none; }
+  @media (min-width: 980px) {
+    .app.wide { max-width: 980px; display: grid; grid-template-columns: 460px 1fr; gap: 48px; align-items: start; }
+    .app.wide > header.top { grid-column: 1 / -1; }
+    .aside:not([hidden]) { display: block; position: sticky; top: 24px; padding: 22px; border-radius: 22px; background: var(--washi-2); }
+    .aside h2 { margin: 0 0 12px; font: 400 22px/1.1 var(--display); }
+    :root { --bw: min(400px, calc((100dvh - 300px) * .75)); }
+  }
+
+  @keyframes breathe { 50% { transform: scale(1.12); opacity: .35; } }
+  @keyframes pop { from { transform: scale(.6); opacity: 0; } }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } }
+  @keyframes bob { 50% { transform: translateY(-5px) rotate(-2deg); } }
+  @keyframes slam { 0% { transform: rotate(-24deg) scale(1.9); opacity: 0; } 60% { transform: rotate(-9deg) scale(.94); opacity: 1; } 100% { transform: rotate(-11deg) scale(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <a class="brand" href="#" id="home" aria-label="Zvířátkové šógi, nová hra">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="56" height="56" rx="12" fill="#F8EAD0" stroke="#2D4C8F" stroke-width="5"/><g id="brandLion"></g></svg>
+      <b>Zvířátkové šógi</b>
+    </a>
+    <span class="score" id="score"></span>
+    <button class="iconbtn" id="helpBtn" aria-label="Jak se hraje" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M9.3 9.3a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.2.9-1.2 1.8v.4"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
+    <button class="iconbtn" id="menuBtn" aria-label="Nabídka" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+  </header>
+
+  <main id="main">
+    <!-- setup -->
+    <section id="setup" class="page" hidden>
+      <h1>Kdo dřív chytí <em>lva</em>?</h1>
+      <p class="lede">Malá japonská hra pro dva na desce 3 × 4. Založ hru, pošli odkaz a hrajte každý na svém telefonu.</p>
+      <div class="cast bob" id="setupCast" aria-hidden="true"></div>
+      <form id="setupForm" class="stack" autocomplete="off">
+        <div class="row2">
+          <label class="f">Ty<input class="in" id="nameX" maxlength="16" required placeholder="tvoje jméno"></label>
+          <label class="f">Soupeř<input class="in" id="nameO" maxlength="16" required placeholder="jméno soupeře"></label>
+        </div>
+        <label class="f">O co hrajete <small>(nepovinné)</small>
+          <select class="in" id="stakeSel">
+            <option value="">Bez sázky, jen pro radost</option>
+            <option value="1">Kdo prohraje, platí kafe</option>
+            <option value="2">Vítěz vybírá místo na rande</option>
+            <option value="3">Kdo prohraje, zve na zmrzlinu</option>
+            <option value="4">Vítěz vybírá film na večer</option>
+            <option value="5">Kdo prohraje, pravdivě odpoví na otázku</option>
+            <option value="6">Jen o čest</option>
+            <option value="c">Vlastní sázka…</option>
+          </select>
+        </label>
+        <label class="f" id="customWrap" hidden>Vlastní sázka <small id="customCount">0 / 40</small><input class="in" id="stakeCustom" maxlength="40" placeholder="např. kdo prohraje, peče bábovku"></label>
+        <div class="f" role="group" aria-labelledby="starterLbl"><span id="starterLbl" style="font-weight:700;font-size:14px">Kdo začíná</span>
+          <div class="seg" id="starterSeg"><button type="button" data-v="x" aria-pressed="false">Já</button><button type="button" data-v="o" aria-pressed="true">Soupeř</button></div>
+        </div>
+        <button class="btn primary" id="setupSubmit" type="submit">Založit hru</button>
+      </form>
+      <div class="recent" id="recent" hidden><h2>Rozehrané na tomhle zařízení</h2><div id="recentList"></div></div>
+    </section>
+
+    <!-- info / loading -->
+    <section id="info" class="page" hidden>
+      <h1 id="infoTitle">Otevírám hru…</h1>
+      <p class="lede" id="infoMeta"></p>
+      <div class="stack"><button class="btn primary" id="infoRetry" type="button">Zkusit znovu</button><button class="btn" id="infoNew" type="button">Založit novou hru</button></div>
+    </section>
+
+    <!-- intro: the challenge -->
+    <section id="intro" class="page" hidden>
+      <div class="vs" id="introVs"></div>
+      <h1 id="introTitle"></h1>
+      <p class="lede">Chyť soupeřova lva, nebo s tím svým doběhni do cíle. Každé zvířátko jde o jedno pole, sebrané zvíře přeběhne k tobě.</p>
+      <div class="cast bob" id="introCast" aria-hidden="true"></div>
+      <div class="card" id="introStakeBox" hidden><small>O co se hraje</small><b id="introStake"></b></div>
+      <div class="stack">
+        <button class="btn primary" id="acceptBtn" type="button">Přijmout výzvu</button>
+        <button class="btn quiet" id="introHelp" type="button">Jak se to hraje</button>
+        <button class="btn quiet" id="introMine" type="button"></button>
+      </div>
+    </section>
+
+    <!-- game -->
+    <section id="game" hidden>
+      <div class="trayrow seat" id="seatTop"></div>
+      <div class="stage" id="stage">
+        <div class="board" id="board" role="group" aria-label="Deska"></div>
+        <div class="hanko" id="hanko" hidden></div>
+      </div>
+      <div class="trayrow seat" id="seatBot"></div>
+      <div id="playBox">
+        <div class="status" aria-live="polite"><h2 id="status"></h2><p id="sub"></p></div>
+        <div class="acts">
+          <button class="btn" id="undoBtn" type="button" hidden>Vzít tah zpět</button>
+          <button class="btn" id="waitCopy" type="button" hidden>Zkopírovat odkaz</button>
+        </div>
+        <div class="acts" id="claims" hidden>
+          <button class="btn" id="claimX" type="button"></button>
+          <button class="btn" id="claimO" type="button"></button>
+        </div>
+      </div>
+      <div id="endBox" class="result" hidden>
+        <h2 id="endL1"></h2>
+        <p class="l2" id="endL2"></p>
+        <p class="meta" id="endMeta"></p>
+        <div class="ticket"><small id="tLabel">Sázka</small><b id="tRes"></b><div class="ser" id="tSer"></div></div>
+        <div class="stack">
+          <button class="btn primary" id="endPrimary" type="button">Odveta</button>
+          <button class="btn" id="endSecondary" type="button">Zkopírovat odkaz na hru</button>
+        </div>
+      </div>
+      <p class="net" id="net" hidden></p>
+    </section>
+
+    <!-- share -->
+    <section id="share" class="page" hidden>
+      <h1>Výzva je připravená. <em>Pošli ji.</em></h1>
+      <p class="lede" id="shareMeta"></p>
+      <div class="fold"><label class="f"><span>Pro: <span class="to" id="foldName"></span></span><textarea class="in" id="msg" rows="5"></textarea></label></div>
+      <div class="stack">
+        <button class="btn primary" id="shareBtn" type="button" hidden>Poslat…</button>
+        <button class="btn" id="copyBtn" type="button">Zkopírovat zprávu</button>
+        <button class="btn" id="copyLinkBtn" type="button">Zkopírovat jen odkaz</button>
+        <button class="btn quiet" id="backBtn" type="button">Pokračovat ke hře</button>
+      </div>
+    </section>
+  </main>
+
+  <aside class="aside" id="aside" hidden><h2>Jak se hraje</h2><div class="rules" id="rulesAside"></div></aside>
+</div>
+
+<dialog class="sheet" id="helpSheet" aria-labelledby="helpTitle">
+  <div class="in-sheet">
+    <header><h2 id="helpTitle">Jak se hraje</h2><button class="iconbtn" data-close aria-label="Zavřít" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="rules" id="rulesSheet"></div>
+  </div>
+</dialog>
+<dialog class="sheet" id="menuSheet" aria-labelledby="menuTitle">
+  <div class="in-sheet">
+    <header><h2 id="menuTitle">Nabídka</h2><button class="iconbtn" data-close aria-label="Zavřít" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="menu">
+      <button class="btn" id="mCopy" type="button">Zkopírovat odkaz na hru</button>
+      <button class="btn" id="mHelp" type="button">Jak se hraje</button>
+      <button class="btn" id="mResign" type="button">Vzdát partii</button>
+      <button class="btn" id="mNew" type="button">Založit novou hru</button>
+    </div>
+  </div>
+</dialog>
+
+<div id="fx" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<p class="sr" id="say" aria-live="assertive"></p>
+
+<script src="engine.js"></script>
+<script>
+(() => {
+  const S = window.Sogi;
+  const $ = id => document.getElementById(id);
+  const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const other = S.other;
+  const attempt = (f, fb) => { try { return f(); } catch { return fb; } };
+
+  // ---------- kresby zvířátek (vlastní, viewBox 0 0 100 100) ----------
+  const INK = "#2A221D";
+  const st0 = `stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
+  const eyes = (y = 50, dx = 8) => `<circle cx="${50 - dx}" cy="${y}" r="3" fill="${INK}"/><circle cx="${50 + dx}" cy="${y}" r="3" fill="${INK}"/><circle cx="${50 - dx + 1}" cy="${y - 1}" r="1" fill="#fff"/><circle cx="${50 + dx + 1}" cy="${y - 1}" r="1" fill="#fff"/>`;
+  const blush = (y, dx) => `<ellipse cx="${50 - dx}" cy="${y}" rx="4.6" ry="2.6" fill="#EE8C82" opacity=".75"/><ellipse cx="${50 + dx}" cy="${y}" rx="4.6" ry="2.6" fill="#EE8C82" opacity=".75"/>`;
+  function mane() {
+    let s = "";
+    for (let k = 0; k < 12; k++) { const a = k * Math.PI / 6; s += `<circle cx="${(50 + Math.cos(a) * 29).toFixed(1)}" cy="${(53 + Math.sin(a) * 29).toFixed(1)}" r="11" fill="#E39B3A" ${st0}/>`; }
+    return s + `<circle cx="50" cy="53" r="30" fill="#E39B3A"/>`;
+  }
+  const ART = {
+    L: () => mane() +
+      `<circle cx="34" cy="35" r="7" fill="#F6D08A" ${st0}/><circle cx="66" cy="35" r="7" fill="#F6D08A" ${st0}/>` +
+      `<circle cx="50" cy="55" r="22" fill="#F6D08A" ${st0}/>` + eyes(51, 8.5) + blush(60, 13) +
+      `<path d="M45.5 57.5 Q50 55 54.5 57.5 Q50 63 45.5 57.5Z" fill="#7A3B2A"/><path d="M44 64.5 Q47 67.5 50 63.5 Q53 67.5 56 64.5" fill="none" ${st0} stroke-width="2.4"/>`,
+    G: () =>
+      `<path d="M40 70 L38 99 L62 99 L60 70Z" fill="#F0BD4F" ${st0}/><circle cx="49" cy="88" r="3.4" fill="#C77A35"/>` +
+      `<path d="M41 27 L37 12 M59 27 L63 12" ${st0} stroke-width="3.4"/><circle cx="37" cy="11" r="5" fill="#9C5A2B" ${st0} stroke-width="2.6"/><circle cx="63" cy="11" r="5" fill="#9C5A2B" ${st0} stroke-width="2.6"/>` +
+      `<ellipse cx="25" cy="35" rx="10" ry="5" transform="rotate(-22 25 35)" fill="#F0BD4F" ${st0}/><ellipse cx="75" cy="35" rx="10" ry="5" transform="rotate(22 75 35)" fill="#F0BD4F" ${st0}/>` +
+      `<ellipse cx="50" cy="46" rx="20" ry="23" fill="#F0BD4F" ${st0}/>` +
+      `<path d="M38 31 q4 -3 7 0 q1 4 -3 5 q-5 0 -4 -5Z M57 34 q4 -2 6 1 q0 4 -4 4 q-3 -1 -2 -5Z M34 45 q3 -2 5 1 q-1 3 -4 3Z" fill="#C77A35"/>` +
+      eyes(46, 8) + `<ellipse cx="50" cy="65" rx="16" ry="11" fill="#F8DDA2" ${st0}/>` +
+      `<ellipse cx="44.5" cy="64" rx="2" ry="2.6" fill="${INK}"/><ellipse cx="55.5" cy="64" rx="2" ry="2.6" fill="${INK}"/>` + blush(55, 15),
+    E: () =>
+      `<ellipse cx="23" cy="47" rx="18" ry="22" fill="#B9C6D6" ${st0}/><ellipse cx="25" cy="48" rx="10" ry="14" fill="#E9B8C3"/>` +
+      `<ellipse cx="77" cy="47" rx="18" ry="22" fill="#B9C6D6" ${st0}/><ellipse cx="75" cy="48" rx="10" ry="14" fill="#E9B8C3"/>` +
+      `<path d="M50 58 Q50 80 59 84 Q66 86 66 79" fill="none" stroke="${INK}" stroke-width="15" stroke-linecap="round"/>` +
+      `<circle cx="50" cy="45" r="23" fill="#A3B3C7" ${st0}/>` +
+      `<path d="M50 56 Q50 80 59 84 Q66 86 66 79" fill="none" stroke="#A3B3C7" stroke-width="9" stroke-linecap="round"/>` +
+      `<path d="M46 66 h3 M46 72 h3.5" stroke="#7F90A6" stroke-width="2" stroke-linecap="round"/>` +
+      eyes(43, 8.5) + blush(52, 14),
+    C: () =>
+      `<path d="M41 86 v6 M37 92 h8 M59 86 v6 M55 92 h8" stroke="#E07B1F" stroke-width="3" stroke-linecap="round"/>` +
+      `<path d="M47 31 Q43 20 50 21 Q51 13 57 22" fill="#F9D34A" ${st0}/>` +
+      `<circle cx="50" cy="58" r="28" fill="#F9D34A" ${st0}/>` +
+      `<path d="M25 60 Q19 68 28 72" fill="none" ${st0}/><path d="M75 60 Q81 68 72 72" fill="none" ${st0}/>` +
+      eyes(53, 9) + blush(62, 15) + `<path d="M44.5 60 L55.5 60 L50 67.5Z" fill="#F08A24" ${st0} stroke-width="2.4"/>`,
+    H: () =>
+      `<path d="M41 86 v6 M37 92 h8 M59 86 v6 M55 92 h8" stroke="#E07B1F" stroke-width="3" stroke-linecap="round"/>` +
+      `<circle cx="41" cy="26" r="6.5" fill="#E2412F" ${st0}/><circle cx="59" cy="26" r="6.5" fill="#E2412F" ${st0}/><circle cx="50" cy="21" r="8" fill="#E2412F" ${st0}/>` +
+      `<circle cx="50" cy="57" r="29" fill="#FFF4E2" ${st0}/>` +
+      `<path d="M23 56 Q14 66 24 74 Q28 70 27 62" fill="#F1E2C8" ${st0}/><path d="M77 56 Q86 66 76 74 Q72 70 73 62" fill="#F1E2C8" ${st0}/>` +
+      eyes(51, 9) + blush(60, 16) +
+      `<path d="M50 63 Q45 74 50 77 Q55 74 50 63Z" fill="#E2412F" ${st0} stroke-width="2.2"/>` +
+      `<path d="M44.5 57.5 L55.5 57.5 L50 64.5Z" fill="#F08A24" ${st0} stroke-width="2.4"/>`,
+  };
+  const artCache = {};
+  const art = t => artCache[t] || (artCache[t] = `<svg class="art" viewBox="0 0 100 100" aria-hidden="true">${ART[t]()}</svg>`);
+  // tečky na okraji kamene ukazují směry tahu (ve vlastní orientaci figurky)
+  function dots(t) { return S.DIRS[t].map(([dr, dc]) => `<i style="left:${50 + dc * 37}%;top:${50 + dr * 36}%"></i>`).join(""); }
+  // figurka: up = hledí „nahoru“ z pohledu tohoto zařízení
+  function pieceHTML(t, owner, up, id) {
+    return `<span class="pc own-${owner}"${id != null ? ` data-id="${id}"` : ""}><span class="tile${up ? "" : " down"}">${art(t)}${dots(t)}</span></span>`;
+  }
+  $("brandLion").innerHTML = `<g transform="translate(10 9) scale(.44)">${ART.L()}</g>`;
+
+  // ---------- texty ----------
+  const NAME = { L: "lev", G: "žirafa", E: "slon", C: "kuřátko", H: "slepice" };
+  const ACC = { L: "lva", G: "žirafu", E: "slona", C: "kuřátko", H: "slepici" };
+  const STAKES = {
+    "1": { text: "Kdo prohraje, platí kafe.", short: "o kafe", third: (w, l) => `${l} platí kafe.`, win: (w, l) => `${l} platí kafe.`, lose: () => "Kafe platíš ty." },
+    "2": { text: "Vítěz vybírá místo na rande.", short: "o místo na rande", third: w => `${w} vybírá místo na rande.`, win: () => "Místo na rande vybíráš ty.", lose: w => `${w} vybírá místo na rande.` },
+    "3": { text: "Kdo prohraje, zve na zmrzlinu.", short: "o zmrzlinu", third: (w, l) => `${l} zve na zmrzlinu.`, win: (w, l) => `${l} tě zve na zmrzlinu.`, lose: () => "Na zmrzlinu zveš ty." },
+    "4": { text: "Vítěz vybírá film na večer.", short: "o film", third: w => `${w} vybírá film na večer.`, win: () => "Film na večer vybíráš ty.", lose: w => `${w} vybírá film na večer.` },
+    "5": { text: "Kdo prohraje, pravdivě odpoví na jednu otázku.", short: "o otázku", third: (w, l) => `${l} pravdivě odpoví na jednu otázku.`, win: (w, l) => `${l} ti pravdivě odpoví na jednu otázku.`, lose: () => "Odpovídáš na jednu otázku. Pravdivě." },
+    "6": { text: "Jen o čest.", short: "o čest", third: w => `Čest patří: ${w}.`, win: () => "Čest je tvoje.", lose: w => `Čest patří: ${w}.` },
+  };
+  function stake(g) {
+    if (STAKES[g.k]) return STAKES[g.k];
+    if (g.k === "c" && g.kc) { const t = g.kc; return { text: t, short: "o sázku", third: w => `${w} vyhrává sázku: ${t}`, win: () => `Vyhráváš sázku: ${t}`, lose: w => `${w} vyhrává sázku: ${t}` }; }
+    return null;
+  }
+  const RULES = () => `
+    <div class="rule">${pieceHTML("L", "x", true)}<p><b>Lev</b> jde o jedno pole kamkoli. Když ho soupeř chytí, prohráváš.</p></div>
+    <div class="rule">${pieceHTML("G", "x", true)}<p><b>Žirafa</b> jde o jedno pole rovně: dopředu, dozadu nebo do strany.</p></div>
+    <div class="rule">${pieceHTML("E", "x", true)}<p><b>Slon</b> jde o jedno pole šikmo.</p></div>
+    <div class="rule">${pieceHTML("C", "x", true)}<p><b>Kuřátko</b> jde jen o jedno pole dopředu.</p></div>
+    <div class="rule">${pieceHTML("H", "x", true)}<p><b>Slepice</b> vznikne, když kuřátko dojde na soupeřovu poslední řadu. Jde kamkoli kromě šikmo dozadu.</p></div>
+    <ol>
+      <li>Tečky na okraji kamene ukazují, kam smí. Klepni na své zvířátko a deska ti ukáže volná pole.</li>
+      <li>Na soupeřovo zvířátko vstoupíš a sebereš ho. Přeběhne k tobě do zásoby.</li>
+      <li>Místo tahu můžeš zvířátko ze zásoby položit na kterékoli volné pole. Slepice se vrací jako kuřátko. Kuřátko položené rovnou na poslední řadu se nepromění a nehne, dokud ho někdo nesebere.</li>
+      <li>Vyhráváš, když chytíš soupeřova lva, nebo když tvůj lev dojde na soupeřovu poslední řadu a soupeř ho tam nemůže hned sebrat.</li>
+      <li>Když se stejná pozice objeví potřetí, je remíza.</li>
+    </ol>`;
+  $("rulesSheet").innerHTML = RULES();
+  $("rulesAside").innerHTML = RULES();
+  const castHTML = () => ["L", "G", "E", "C"].map((t, k) => `<figure>${pieceHTML(t, k % 2 ? "o" : "x", true)}<figcaption><b>${NAME[t][0].toUpperCase() + NAME[t].slice(1)}</b>${["kamkoli", "rovně", "šikmo", "dopředu"][k]}</figcaption></figure>`).join("");
+  $("setupCast").innerHTML = castHTML();
+  $("introCast").innerHTML = castHTML();
+
+  // ---------- sdílená místnost (stejně jako Psaníčko: mantledb.sh, bez účtu) ----------
+  // Odkaz #r.<id>. Dokument {app, g, v, sx, so, u}: g = partie, v = počítadlo zápisů (každý zápis ho nejdřív
+  // znovu přečte a ověří), sx / so = tokeny zařízení, která drží židle ("" = volno), u = čas zápisu.
+  // g = {x, o, s, m: ["m74", "dC5", …], t, k, kc, w: [výhry x, výhry o], r: "" | kdo se vzdal}
+  const API = "https://mantledb.sh/v2/";
+  const docUrl = id => `${API}zviratka-${id}/hra`;
+  const BASE_URL = location.origin + location.pathname;
+  const linkFor = () => BASE_URL + "#r." + room.id;
+  async function req(url, opt = {}) {
+    const ac = new AbortController(), timer = setTimeout(() => ac.abort(), 10000);
+    try { return await fetch(url, { ...opt, cache: "no-store", signal: ac.signal }); } finally { clearTimeout(timer); }
+  }
+  async function loadDoc(id) {
+    const r = await req(docUrl(id));
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error("load " + r.status);
+    return r.json();
+  }
+  async function saveDoc(id, d) {
+    const r = await req(docUrl(id), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...d, u: Date.now() }) });
+    if (!r.ok) throw new Error("save " + r.status);
+  }
+  const store = { get: k => attempt(() => localStorage.getItem(k), null), set: (k, v) => attempt(() => localStorage.setItem(k, v)) };
+  const randId = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => (b % 36).toString(36)).join("");
+  const device = store.get("zs-dev") || randId(16);
+  store.set("zs-dev", device);
+
+  // partie z dokumentu: očištěná kopie, nebo null
+  function norm(g) {
+    if (!g || typeof g !== "object") return null;
+    const str = (v, n) => typeof v === "string" ? v.trim().slice(0, n) : "";
+    const x = str(g.x, 16), o = str(g.o, 16);
+    if (!x || !o || (g.s !== "x" && g.s !== "o") || !Array.isArray(g.m)) return null;
+    const m = g.m.filter(v => typeof v === "string").slice(0, 600);
+    const w = Array.isArray(g.w) ? [0, 1].map(k => Math.max(0, Math.min(999, g.w[k] | 0))) : [0, 0];
+    const k = /^[1-6c]$/.test(g.k || "") ? g.k : "", kc = str(g.kc, 40);
+    return { x, o, s: g.s, m, t: Number.isFinite(g.t) ? g.t : null, k: k === "c" && !kc ? "" : k, kc, w, r: g.r === "x" || g.r === "o" ? g.r : "" };
+  }
+  const clone = g => ({ ...g, m: [...g.m], w: [...g.w] });
+
+  // ---------- stav ----------
+  let st = null;      // partie, jak ji naposled známe
+  let game = null;    // S.play(st): pozice, výsledek, poslední tah
+  let room = null;    // { id, v, sx, so }
+  let me = null;      // "x" | "o" | null = přihlížíš
+  let view = "setup", shareKind = "new";
+  let sel = null;     // vybraná figurka: { k: "m", f } nebo { k: "d", t }
+  let busy = false, net = "", bootSeq = 0, starter = "o";
+  let animUntil = 0;  // do té doby běží animace tahu a deska se nepřekresluje
+
+  const nameOf = (g, p) => p === "x" ? g.x : g.o;
+  const ended = () => !!(game && game.result);
+  const turn = () => game.s.turn;
+  const canPlay = () => !!st && !!room && !!me && !busy && !ended() && turn() === me;
+  const persp = () => me || "x";
+  const lastIsMine = () => !!me && st.m.length > 0 && !ended() && turn() !== me;
+  const freeSeat = () => !room ? null : !room.sx ? "x" : !room.so ? "o" : null;
+  const setGame = g => { st = g; game = S.play(g); };
+  const tahu = n => n === 1 ? "tah" : n >= 2 && n <= 4 ? "tahy" : "tahů";
+  const buzz = () => attempt(() => navigator.vibrate && navigator.vibrate(12));
+  function seriesAfter() { const w = [...st.w], r = game.result; if (r && r.w) w[r.w === "x" ? 0 : 1]++; return w; }
+  const cellName = i => { const [r, c] = S.rc(i); return "ABC"[c] + (4 - r); };
+  const say = t => { $("say").textContent = ""; requestAnimationFrame(() => $("say").textContent = t); };
+
+  // ---------- vykreslení ----------
+  function setView(v) {
+    view = v;
+    ["setup", "info", "intro", "share"].forEach(k => $(k).hidden = v !== k);
+    $("game").hidden = v !== "play";
+    $("app").classList.toggle("wide", v === "play" || v === "setup" || v === "intro");
+    $("aside").hidden = !(v === "play" || v === "setup" || v === "intro");
+    render();
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+  const show = v => view === v ? render() : setView(v);
+
+  function render() {
+    const inGame = !!st && !!room && view === "play";
+    $("menuBtn").hidden = !inGame;
+    $("score").textContent = st && room && view !== "setup" && view !== "info" ? scoreText() : "";
+    document.querySelector("header.top").classList.toggle("has-score", !!$("score").textContent);
+    document.title = inGame && canPlay() ? "Jsi na tahu · Zvířátkové šógi" : "Zvířátkové šógi";
+    if (view === "setup") renderSetup();
+    if (view === "intro") renderIntro();
+    if (view === "play") renderGame();
+    if (view === "share") renderShare();
+  }
+  function scoreText() {
+    const s = stake(st), parts = [];
+    if (st.w[0] || st.w[1]) parts.push(`${st.x} ${st.w[0]} : ${st.w[1]} ${st.o}`);
+    else if (s) parts.push(s.short);
+    return parts.join(" · ");
+  }
+  function discHTML(p, name) { return `<span class="disc own-${p}" style="background:var(--pc)" aria-hidden="true">${(name[0] || "?").toLocaleUpperCase("cs")}</span>`; }
+
+  function renderSetup() {
+    $("setupSubmit").disabled = busy;
+    $("setupSubmit").textContent = busy ? "Zakládám hru…" : "Založit hru";
+    [...$("starterSeg").children].forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === starter)));
+    const list = recentRooms(), box = $("recentList");
+    $("recent").hidden = !list.length; box.textContent = "";
+    list.forEach(r => {
+      const a = document.createElement("a"); a.href = "#r." + r.id; a.textContent = `${r.x} a ${r.o}`;
+      const sp = document.createElement("span"); sp.textContent = r.me ? `hraješ za ${r.me === "x" ? r.x : r.o}` : "přihlížíš";
+      a.append(sp); box.append(a);
+    });
+  }
+
+  function renderIntro() {
+    const seat = freeSeat() || "o", host = other(seat);
+    const vs = $("introVs"); vs.innerHTML = "";
+    const mk = p => { const s = document.createElement("span"); s.style.display = "flex"; s.style.alignItems = "center"; s.style.gap = "8px"; s.innerHTML = discHTML(p, nameOf(st, p)); const b = document.createElement("span"); b.textContent = nameOf(st, p); s.append(b); return s; };
+    const sep = document.createElement("span"); sep.className = "x"; sep.textContent = "×";
+    vs.append(mk(host), sep, mk(seat));
+    $("introTitle").textContent = `${nameOf(st, host)} tě vyzývá na Zvířátkové šógi.`;
+    const s = stake(st);
+    $("introStakeBox").hidden = !s; if (s) $("introStake").textContent = s.text;
+    $("introMine").textContent = `Tohle je moje hra, jsem ${nameOf(st, host)}`;
+    $("acceptBtn").disabled = busy;
+    $("acceptBtn").textContent = busy ? "Přijímám…" : (turn() === seat && !st.m.length ? "Přijmout výzvu a začít" : "Přijmout výzvu");
+  }
+
+  function seatHTML(p) {
+    const on = !ended() && turn() === p;
+    const tag = p === me ? (on ? "jsi na tahu" : "ty") : on ? "na tahu" : me ? "soupeř" : "";
+    return { on, html: `<div class="who">${discHTML(p, nameOf(st, p))}<span><span class="nm"></span><span class="tag">${tag}</span></span></div><div class="tray own-${p}" data-tray="${p}" aria-label="Zásoba: ${p === me ? "tvoje" : nameOf(st, p)}"></div>` };
+  }
+
+  function renderGame() {
+    const isEnd = ended();
+    $("playBox").hidden = isEnd; $("endBox").hidden = !isEnd;
+    $("net").textContent = net; $("net").hidden = !net;
+    if (isEnd) renderEnd(); else renderStatus();
+    if (Date.now() < animUntil) { clearTimeout(renderGame.t); renderGame.t = setTimeout(render, animUntil - Date.now() + 20); return; }
+    const p0 = persp(), top = other(p0);
+    for (const [boxId, p] of [["seatTop", top], ["seatBot", p0]]) {
+      const box = $(boxId), s = seatHTML(p);
+      box.className = `trayrow seat own-${p}` + (s.on ? " on" : "");
+      box.innerHTML = s.html;
+      box.querySelector(".nm").textContent = nameOf(st, p);
+      fillTray(box.querySelector(".tray"), p);
+    }
+    drawBoard();
+    renderHanko();
+  }
+
+  function fillTray(tray, p) {
+    tray.textContent = "";
+    const hand = game.s.h[p].slice();
+    // chycený lev se vystaví v zásobě vítěze
+    const trophy = game.result && game.result.why === "lev" && game.result.w === p ? game.last.captured : null;
+    if (!hand.length && !trophy) { const e = document.createElement("span"); e.className = "empty"; e.textContent = "zásoba je prázdná"; tray.append(e); return; }
+    const order = { G: 0, E: 1, C: 2 };
+    hand.sort((a, b) => order[a.t] - order[b.t]);
+    const mineToDrop = canPlay() && p === me;
+    hand.forEach(c => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "hp"; b.dataset.t = c.t;
+      b.innerHTML = pieceHTML(c.t, p, p === persp(), c.id);
+      b.setAttribute("aria-label", `${NAME[c.t]} v zásobě` + (mineToDrop ? ", klepni a polož ho na volné pole" : ""));
+      b.disabled = !mineToDrop;
+      if (sel && sel.k === "d" && sel.t === c.t && mineToDrop) b.classList.add("sel");
+      b.addEventListener("click", () => pickDrop(c.t));
+      tray.append(b);
+    });
+    if (trophy) { const s = document.createElement("span"); s.className = "hp"; s.innerHTML = pieceHTML("L", p, p === persp(), trophy.id); s.setAttribute("aria-label", "chycený lev"); tray.append(s); }
+  }
+
+  function targets() {
+    if (!sel || !canPlay()) return [];
+    return S.moves(game.s, me).filter(m => m.k === sel.k && (m.k === "m" ? m.f === sel.f : m.t === sel.t));
+  }
+
+  function drawBoard() {
+    const board = $("board"), p0 = persp(), s = game.s, tg = targets();
+    board.textContent = "";
+    board.classList.toggle("locked", !canPlay());
+    board.style.setProperty("--opc", `var(--${other(p0) === "x" ? "ai" : "kaki"})`);
+    const last = game.last;
+    if (last) board.style.setProperty("--mpc", `var(--${last.p === "x" ? "ai" : "kaki"})`);
+    for (let v = 0; v < 12; v++) {
+      const i = p0 === "o" ? 11 - v : v, pc = s.b[i];
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "cell"; b.dataset.i = i;
+      const [r] = S.rc(i);
+      if (r === S.goalRow(p0)) b.classList.add("goal-them");
+      if (last && last.from === i) b.classList.add("from");
+      if (last && last.to === i) b.classList.add("to");
+      const t = tg.find(m => m.to === i);
+      if (t) { b.classList.add("target"); if (pc) b.classList.add("cap"); b.insertAdjacentHTML("beforeend", '<span class="mark"></span>'); }
+      if (sel && sel.k === "m" && sel.f === i) b.classList.add("sel");
+      if (pc) b.insertAdjacentHTML("beforeend", pieceHTML(pc.t, pc.p, pc.p === p0, pc.id));
+      let label = cellName(i) + ", " + (pc ? `${pc.p === me ? "tvoje" : me ? "soupeřova" : nameOf(st, pc.p) + ":"} ${NAME[pc.t]}` : "prázdné");
+      if (t) label += pc ? ", můžeš sebrat" : ", sem můžeš táhnout";
+      b.setAttribute("aria-label", label);
+      b.addEventListener("click", () => tapCell(i));
+      board.append(b);
+    }
+  }
+
+  function renderStatus() {
+    const t = turn(), opp = me ? other(me) : null;
+    let h, sub = "";
+    $("claims").hidden = true;
+    if (!me) {
+      h = `Na tahu: ${nameOf(st, t)}.`; sub = "Přihlížíš, hrají jen dva. Hraješ tuhle hru z jiného zařízení?";
+      $("claims").hidden = false;
+      $("claimX").textContent = `Jsem ${st.x}`; $("claimO").textContent = `Jsem ${st.o}`;
+    } else if (busy) { h = "Zapisuju tah…"; }
+    else if (t === me) {
+      h = !st.m.some((_, k) => (k % 2 === 0 ? st.s : other(st.s)) === me) && !st.m.length ? "Začínáš. Klepni na své zvířátko." : "Jsi na tahu.";
+      if (sel) sub = sel.k === "d" ? `Polož ${ACC[sel.t]} na kterékoli volné pole.` : "Vyber pole s tečkou. Červený rámeček = sebereš.";
+      else sub = game.s.h[me].length ? "Táhni zvířátkem, nebo polož něco ze zásoby." : "Tečky na kameni ukazují, kam zvířátko smí.";
+      if (game.count === 2) sub = "Pozor: tahle pozice už tu jednou byla. Potřetí je remíza.";
+    } else if (freeSeat() === opp) { h = "Odkaz ještě nikdo neotevřel."; sub = "Pošli ho do chatu. Jakmile soupeř přijme výzvu, uvidíš to tady."; }
+    else { h = `${nameOf(st, opp)} přemýšlí…`; sub = "Tah se tu objeví sám. Stránku můžeš klidně zavřít."; }
+    $("status").textContent = h;
+    $("sub").textContent = sub; $("sub").hidden = !sub;
+    $("undoBtn").hidden = !lastIsMine() || busy;
+    $("waitCopy").hidden = !me || t === me || freeSeat() !== opp;
+  }
+
+  const WHY = {
+    lev: { stamp: "LEV<br>CHYCEN", win: "Lev je chycený!", lose: "Tvůj lev je chycený.", third: "Lev je chycený." },
+    cil: { stamp: "LEV<br>V CÍLI", win: "Tvůj lev doběhl do cíle!", lose: "Soupeřův lev doběhl do cíle.", third: "Lev doběhl do cíle." },
+    vzdal: { stamp: "VZDÁNO", win: "Soupeř partii vzdal.", lose: "Partie je vzdaná.", third: "Partie je vzdaná." },
+    blok: { stamp: "BEZ<br>TAHU", win: "Soupeř nemá kam táhnout.", lose: "Nemáš kam táhnout.", third: "Hráč nemá kam táhnout." },
+    opak: { stamp: "REMÍZA", win: "", lose: "", third: "" },
+  };
+  function renderHanko() {
+    const r = game.result, h = $("hanko");
+    h.hidden = !r || view !== "play";
+    if (!r) return;
+    h.innerHTML = WHY[r.why].stamp;
+  }
+
+  function renderEnd() {
+    const r = game.result, s = stake(st), w = seriesAfter(), won = !!r.w && r.w === me;
+    const W = r.w ? nameOf(st, r.w) : "", L = r.w ? nameOf(st, other(r.w)) : "";
+    if (!r.w) { $("endL1").textContent = "Remíza."; $("endL2").textContent = "Stejná pozice se objevila potřetí."; $("endL2").className = "l2"; }
+    else if (!me) { $("endL1").textContent = WHY[r.why].third; $("endL2").textContent = `Vyhrává ${W}.`; $("endL2").className = "l2"; }
+    else if (won) { $("endL1").textContent = WHY[r.why].win; $("endL2").textContent = "Vyhráváš!"; $("endL2").className = "l2 win"; }
+    else { $("endL1").textContent = WHY[r.why].lose; $("endL2").textContent = `Vyhrává ${W}. Tentokrát.`; $("endL2").className = "l2"; }
+    $("endMeta").textContent = `partie ${st.w[0] + st.w[1] + 1} · ${st.m.length} ${tahu(st.m.length)}`;
+    $("tLabel").textContent = s ? "Sázka" : "Výsledek";
+    $("tRes").textContent = !r.w ? (s ? "Sázka se přesouvá do odvety." : "Nikdo nevyhrál.")
+      : !me ? (s ? s.third(W, L) : `Vyhrává ${W}.`)
+      : s ? (won ? s.win(W, L) : s.lose(W, L)) : (won ? "Bez sázky, jen pro radost." : `Vyhrává ${W}.`);
+    $("tSer").textContent = `série: ${st.x} ${w[0]} : ${w[1]} ${st.o}`;
+    const loser = r.w ? nameOf(st, other(r.w)) : nameOf(st, other(st.s));
+    $("endPrimary").hidden = !me;
+    $("endPrimary").disabled = busy;
+    if (!me) $("endSecondary").textContent = "Zkopírovat odkaz na hru";
+    else if (!r.w || won) { $("endPrimary").textContent = `Odveta (začíná ${loser})`; $("endSecondary").textContent = "Zkopírovat odkaz na hru"; }
+    else { $("endPrimary").textContent = "Chci odvetu"; $("endSecondary").textContent = "Uznat porážku (zkopíruje zprávu)"; }
+  }
+  function concedeText() {
+    const r = game.result, s = stake(st), W = nameOf(st, r.w), L = nameOf(st, other(r.w));
+    return `Uznávám porážku ve Zvířátkovém šógi. ${s ? s.third(W, L) + " " : ""}Kdy a kde?`;
+  }
+
+  function message() {
+    const link = linkFor(), s = stake(st), host = me || "x";
+    return `${nameOf(st, host)} tě vyzývá na Zvířátkové šógi, malou japonskou hru o chytání lva.${s ? " O co hrajeme: " + s.text : ""} Pravidla jsou ve hře, hrajeme oba na tomhle odkazu: ${link}`;
+  }
+  function renderShare() {
+    $("foldName").textContent = nameOf(st, other(me || "x"));
+    const s = stake(st);
+    $("shareMeta").textContent = "Odkaz posíláš jen jednou, tahy se na něm pak objevují samy." + (s ? ` O co: ${s.text}` : "");
+    const msg = $("msg"), link = linkFor();
+    if (msg.dataset.link !== link) { msg.value = message(); msg.dataset.link = link; }
+    $("shareBtn").hidden = !navigator.share;
+  }
+
+  // ---------- choreografie tahu ----------
+  // snímek pozic všech figurek před překreslením (podle data-id)
+  function snapshot() {
+    const m = {};
+    document.querySelectorAll("#game [data-id]").forEach(el => { m[el.dataset.id] = el.getBoundingClientRect(); });
+    return m;
+  }
+  const EASE = "cubic-bezier(.16,1,.3,1)";
+  function center(r) { return [r.left + r.width / 2, r.top + r.height / 2]; }
+
+  function play(snap, info) {
+    if (!info || !snap || view !== "play") return 0;
+    if (calm()) return 0;
+    const p0 = persp();
+    const el = document.querySelector(`#board [data-id="${info.piece.id}"]`);
+    const from = snap[info.piece.id];
+    let total = 320;
+    if (el && from) {
+      const to = el.getBoundingClientRect();
+      const dx = from.left - to.left, dy = from.top - to.top, sc = from.width / to.width;
+      const kf = info.dropped
+        ? [{ transform: `translate(${dx}px,${dy}px) scale(${sc})` }, { transform: `translate(${dx * .45}px,${dy * .45 - 34}px) scale(1.14)`, offset: .55 }, { transform: "translate(0,0) scale(.94,1.06)", offset: .86 }, { transform: "none" }]
+        : [{ transform: `translate(${dx}px,${dy}px)` }, { transform: "none" }];
+      el.style.zIndex = 3;
+      el.animate(kf, { duration: info.dropped ? 480 : 320, easing: info.dropped ? "ease-in-out" : EASE }).finished.then(() => el.style.zIndex = "", () => {});
+      if (info.dropped) total = 480;
+    }
+    if (info.captured) total = Math.max(total, capture(snap, info, p0));
+    if (info.promoted && el) {
+      const tile = el.querySelector(".tile");
+      const base = tile.classList.contains("down") ? "rotate(180deg) " : "";
+      setTimeout(() => {
+        tile.animate([{ transform: base + "rotateY(0) scale(1)" }, { transform: base + "rotateY(90deg) scale(1.18)", offset: .45 }, { transform: base + "rotateY(360deg) scale(1)" }], { duration: 620, easing: "ease-in-out" });
+        petals(el.getBoundingClientRect(), "#F2A9B8", 8);
+      }, 300);
+      total = Math.max(total, 950);
+    }
+    if (info.lionHome) total = Math.max(total, 400);
+    return total;
+  }
+
+  // sebrané zvíře se otočí, změní barvu a přeběhne do zásoby toho, kdo ho sebral
+  function capture(snap, info, p0) {
+    const cap = info.captured, from = snap[cap.id];
+    const dest = document.querySelector(`#game .tray [data-id="${cap.id}"]`);
+    if (!from || !dest) return 0;
+    const to = dest.getBoundingClientRect();
+    const newT = cap.t === "H" ? "C" : cap.t;
+    const g = document.createElement("div");
+    g.className = "ghost";
+    Object.assign(g.style, { left: from.left + "px", top: from.top + "px", width: from.width + "px", height: from.height + "px" });
+    g.innerHTML = `<div class="face">${pieceHTML(cap.t, cap.p, cap.p === p0)}</div><div class="face back">${pieceHTML(newT, info.p, info.p === p0)}</div>`;
+    $("fx").append(g);
+    const host = dest.closest(".hp") || dest;
+    host.style.visibility = "hidden";
+    const [fx0, fy0] = center(from), [tx, ty] = center(to);
+    const dx = tx - fx0, dy = ty - fy0, sc = to.width / from.width;
+    const lift = Math.min(90, 40 + Math.abs(dy) * .25);
+    const anim = g.animate([
+      { transform: "translate(0,0) rotateY(0) rotate(0) scale(1)" },
+      { transform: "translate(0,-16px) rotateY(0) rotate(-8deg) scale(1.16)", offset: .2 },
+      { transform: "translate(0,-12px) rotateY(0) rotate(7deg) scale(1.16)", offset: .3 },
+      { transform: `translate(${dx * .5}px,${dy * .5 - lift}px) rotateY(180deg) rotate(0) scale(${(1 + sc) / 2 + .1})`, offset: .66 },
+      { transform: `translate(${dx}px,${dy}px) rotateY(180deg) rotate(0) scale(${sc})` },
+    ], { duration: 1050, delay: 160, easing: "cubic-bezier(.45,0,.2,1)", fill: "both" });
+    setTimeout(() => burst(from, info.p), 200);
+    const done = () => {
+      g.remove(); host.style.visibility = "";
+      host.animate([{ transform: "scale(1.35) translateY(-4px)" }, { transform: "scale(.92)", offset: .6 }, { transform: "none" }], { duration: 300, easing: EASE });
+    };
+    anim.finished.then(done, done);
+    return 1250;
+  }
+  function burst(r, p) {
+    const [cx, cy] = center(r), col = p === "x" ? "#2D4C8F" : "#C9502A";
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "burst"); svg.setAttribute("viewBox", "-60 -60 120 120");
+    svg.style.left = cx + "px"; svg.style.top = cy + "px";
+    let d = "";
+    for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + .3, r1 = 30, r2 = 46; d += `M${(Math.cos(a) * r1).toFixed(1)} ${(Math.sin(a) * r1).toFixed(1)}L${(Math.cos(a) * r2).toFixed(1)} ${(Math.sin(a) * r2).toFixed(1)}`; }
+    svg.innerHTML = `<path d="${d}" stroke="${col}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+    $("fx").append(svg);
+    svg.animate([{ transform: "scale(.5)", opacity: 1 }, { transform: "scale(1.25)", opacity: 0 }], { duration: 420, easing: EASE }).finished.then(() => svg.remove(), () => svg.remove());
+  }
+  function petals(r, col, n) {
+    const [cx, cy] = center(r);
+    for (let k = 0; k < n; k++) {
+      const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      s.setAttribute("viewBox", "0 0 20 20"); s.style.cssText = `position:fixed;left:${cx - 8}px;top:${cy - 8}px;width:16px;height:16px`;
+      s.innerHTML = `<path d="M10 2 C15 6 15 13 10 18 C5 13 5 6 10 2Z M10 2 L10 6" fill="${col}" stroke="#D97B90" stroke-width="1"/>`;
+      $("fx").append(s);
+      const a = k / n * Math.PI * 2 + Math.random() * .4, dist = 48 + Math.random() * 30;
+      s.animate([{ transform: "translate(0,0) rotate(0) scale(.4)", opacity: 1 }, { transform: `translate(${Math.cos(a) * dist}px,${Math.sin(a) * dist + 18}px) rotate(${200 + k * 40}deg) scale(1)`, opacity: 0 }], { duration: 900, easing: "cubic-bezier(.2,.7,.3,1)" }).finished.then(() => s.remove(), () => s.remove());
+    }
+  }
+  function narrate(info, g) {
+    const who = info.p === me ? "Ty" : nameOf(g, info.p);
+    let t = info.dropped ? `${who}: ${NAME[info.piece.t]} ze zásoby na pole ${cellName(info.to)}.` : `${who}: ${NAME[info.promoted ? "C" : info.piece.t]} na ${cellName(info.to)}`;
+    if (info.captured) t += `, bere ${ACC[info.captured.t]}`;
+    if (!info.dropped) t += ".";
+    if (info.promoted) t += " Kuřátko je teď slepice.";
+    return t;
+  }
+
+  // nová pozice + případná animace posledního tahu
+  function showGame(g, animate) {
+    const snap = animate ? snapshot() : null;
+    setGame(g);
+    sel = null;
+    const info = animate ? game.last : null;
+    animUntil = 0;
+    show("play");
+    const h = $("hanko");
+    h.classList.remove("slam"); h.style.animationDelay = "";
+    if (info) {
+      const t = play(snap, info);
+      animUntil = Date.now() + t;
+      if (game.result && !calm()) { h.style.animationDelay = (t + 120) + "ms"; void h.offsetWidth; h.classList.add("slam"); }
+      say(narrate(info, g) + (game.result ? " " + $("endL1").textContent + " " + $("endL2").textContent : ""));
+    }
+  }
+
+  // ---------- zápis do místnosti ----------
+  // otisk partie: změna počítadla bez změny partie (např. soupeř právě přijal výzvu) není konflikt
+  const sig = g => g ? [g.x, g.o, g.s, g.m.join(","), g.w.join(":"), g.r, g.k, g.kc].join("|") : "";
+  async function commit(next, ok, conflictText, base = st) {
+    busy = true; pollSeq++; render();
+    let d;
+    try { d = await loadDoc(room.id); }
+    catch { busy = false; toast("Spojení nevyšlo, zkus to znovu."); render(); return false; }
+    const cur = d && norm(d.g);
+    if (!d || !cur || (d.v !== room.v && sig(cur) !== sig(base)) || !ok(cur)) {
+      busy = false; sel = null;
+      toast(conflictText || "Mezitím se hra změnila, tah se nezapsal.");
+      if (d) apply(d, true); else render();
+      return false;
+    }
+    try { await saveDoc(room.id, { ...d, g: next, v: d.v + 1 }); }
+    catch { busy = false; toast("Tah se nepodařilo odeslat, zkus to znovu."); render(); return false; }
+    room.v = d.v + 1; room.sx = d.sx || ""; room.so = d.so || "";
+    busy = false; lastChange = Date.now();
+    return true;
+  }
+
+  function apply(d, force) {
+    if (!room || !d) return;
+    room.sx = d.sx || ""; room.so = d.so || "";
+    const g = norm(d.g);
+    if (!g || (d.v === room.v && !force)) return;
+    const prev = st;
+    room.v = d.v; lastChange = Date.now();
+    const sameGame = prev && g.x === prev.x && g.o === prev.o && g.s === prev.s && g.w[0] === prev.w[0] && g.w[1] === prev.w[1];
+    const grew = sameGame && g.m.length === prev.m.length + 1 && prev.m.every((x, i) => g.m[i] === x);
+    if (view === "intro") { setGame(g); if (!freeSeat()) show("play"); else render(); return; }
+    // partie beze změny (soupeř jen přijal výzvu): výběr figurky zůstává
+    if (view === "play" && sig(g) === sig(prev)) { render(); return; }
+    if (view === "share" || view === "info" || view === "setup") { setGame(g); return; }
+    if (grew && me && S.play(g).s.turn === me) buzz();
+    showGame(g, grew);
+    remember();
+  }
+
+  // ---------- dotazování ----------
+  let pollT = null, pollSeq = 0, lastChange = Date.now(), fails = 0;
+  function interval() {
+    const idle = Date.now() - lastChange;
+    const ms = idle < 5 * 60e3 ? 2500 : idle < 30 * 60e3 ? 10000 : 30000;
+    return fails ? Math.min(60000, ms * 2 ** Math.min(fails, 4)) : ms;
+  }
+  function schedule(ms) { clearTimeout(pollT); pollT = setTimeout(poll, ms); }
+  async function poll() {
+    clearTimeout(pollT);
+    if (!room || room.v < 0 || document.hidden) return;
+    if (busy) { schedule(1500); return; }
+    const id = room.id, seq = ++pollSeq;
+    try {
+      const d = await loadDoc(id);
+      if (!room || room.id !== id || seq !== pollSeq || busy) return schedule(interval());
+      fails = 0;
+      if (net) { net = ""; render(); }
+      if (d) apply(d);
+    } catch {
+      fails++;
+      if (fails >= 2 && !net) { net = "Spojení vázne, zkouším to znovu…"; render(); }
+    }
+    schedule(interval());
+  }
+  function wake() { if (room && !document.hidden) { lastChange = Date.now(); poll(); } }
+  document.addEventListener("visibilitychange", wake);
+  window.addEventListener("pageshow", e => { if (e.persisted) wake(); });
+  window.addEventListener("online", wake);
+  window.addEventListener("focus", wake);
+
+  // ---------- hraní ----------
+  function tapCell(i) {
+    if (!canPlay()) return;
+    const pc = game.s.b[i];
+    const t = targets().find(m => m.to === i);
+    if (t) { move(t); return; }
+    if (pc && pc.p === me) { sel = sel && sel.k === "m" && sel.f === i ? null : { k: "m", f: i }; buzz(); render(); return; }
+    if (sel) { sel = null; render(); }
+  }
+  function pickDrop(t) {
+    if (!canPlay()) return;
+    sel = sel && sel.k === "d" && sel.t === t ? null : { k: "d", t };
+    buzz(); render();
+  }
+  async function move(mv) {
+    if (!canPlay() || !S.legal(game.s, mv)) return;
+    const len = st.m.length, prevSt = st;
+    const next = clone(st);
+    next.m.push(S.enc(mv));
+    next.t = Math.floor(Date.now() / 60000);
+    // tah se ukáže hned, zápis běží na pozadí; když nevyjde, pozice se vrátí
+    showGame(next, true);
+    buzz();
+    const ok = await commit(next, cur => cur.m.length === len && !cur.r && S.play(cur).s.turn === me, "", prevSt);
+    if (!ok) { if (st === next) { animUntil = 0; showGame(prevSt, false); } return; }
+    render();
+    remember();
+  }
+  async function undo() {
+    if (busy || !lastIsMine()) return;
+    const len = st.m.length, next = clone(st);
+    next.m.pop();
+    if (!await commit(next, cur => cur.m.length === len && !cur.r, "Soupeř už mezitím táhl, tah zpět nejde.")) return;
+    showGame(next, false);
+  }
+  $("undoBtn").addEventListener("click", undo);
+
+  async function rematch() {
+    if (busy || !me || !ended()) return;
+    const r = game.result;
+    const next = { x: st.x, o: st.o, s: r.w ? other(r.w) : other(st.s), m: [], t: null, k: st.k, kc: st.kc, w: seriesAfter(), r: "" };
+    if (!await commit(next, cur => !!S.play(cur).result, "Odvetu už mezitím založil soupeř.")) return;
+    showGame(next, false);
+    say(`Odveta. Začíná ${nameOf(next, next.s)}.`);
+  }
+  async function resign() {
+    if (busy || !me || ended()) return;
+    if (!confirm("Opravdu vzdát tuhle partii?")) return;
+    const len = st.m.length, next = { ...clone(st), r: me };
+    if (!await commit(next, cur => cur.m.length === len && !S.play(cur).result)) return;
+    showGame(next, false);
+  }
+  $("endPrimary").addEventListener("click", rematch);
+  $("endSecondary").addEventListener("click", () => {
+    const r = game.result;
+    if (me && r && r.w && r.w !== me) copy(concedeText(), "Zkopírováno, vlož to do chatu");
+    else copyLink();
+  });
+
+  // ---------- přijetí výzvy ----------
+  async function accept() {
+    if (busy || !room) return;
+    busy = true; render();
+    let d;
+    try { d = await loadDoc(room.id); }
+    catch { busy = false; toast("Spojení nevyšlo, zkus to znovu."); render(); return; }
+    const seat = d && (!d.sx ? "x" : !d.so ? "o" : null);
+    if (!d || !seat) { busy = false; toast("Výzvu už přijal někdo jiný. Můžeš přihlížet."); if (d) { apply(d, true); } show("play"); return; }
+    const nd = { ...d, v: d.v + 1, [seat === "x" ? "sx" : "so"]: device };
+    try { await saveDoc(room.id, nd); }
+    catch { busy = false; toast("Spojení nevyšlo, zkus to znovu."); render(); return; }
+    busy = false;
+    room.v = nd.v; room.sx = nd.sx || ""; room.so = nd.so || "";
+    setMe(seat);
+    showGame(norm(d.g) || st, false);
+  }
+  $("acceptBtn").addEventListener("click", accept);
+  function claim(p) {
+    if (!room || !confirm(`Pokračovat v tomhle prohlížeči jako ${nameOf(st, p)}?`)) return;
+    setMe(p); showGame(st, false);
+  }
+  $("claimX").addEventListener("click", () => claim("x"));
+  $("claimO").addEventListener("click", () => claim("o"));
+  $("introMine").addEventListener("click", () => claim(other(freeSeat() || "o")));
+  function setMe(p) { me = p; store.set("zs-r-" + room.id, p); remember(); }
+
+  // ---------- kopírování, nabídka ----------
+  function toast(text) {
+    const t = $("toast"); t.textContent = text; t.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2800);
+  }
+  async function copy(text, done) {
+    try { await navigator.clipboard.writeText(text); toast(done); }
+    catch { window.prompt("Zkopíruj si to:", text); }
+  }
+  const copyLink = () => copy(linkFor(), "Odkaz je zkopírovaný");
+  $("copyBtn").addEventListener("click", () => copy($("msg").value, "Zkopírováno, vlož to do chatu"));
+  $("copyLinkBtn").addEventListener("click", copyLink);
+  $("waitCopy").addEventListener("click", copyLink);
+  $("shareBtn").addEventListener("click", async () => { try { await navigator.share({ text: $("msg").value }); } catch {} });
+  $("backBtn").addEventListener("click", () => showGame(st, false));
+  const openSheet = id => { const d = $(id); if (!d.open) d.showModal(); };
+  document.querySelectorAll("dialog [data-close]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
+  document.querySelectorAll("dialog").forEach(d => d.addEventListener("click", e => { if (e.target === d) d.close(); }));
+  $("helpBtn").addEventListener("click", () => openSheet("helpSheet"));
+  $("introHelp").addEventListener("click", () => openSheet("helpSheet"));
+  $("menuBtn").addEventListener("click", () => { $("mResign").hidden = !me || ended(); openSheet("menuSheet"); });
+  $("mCopy").addEventListener("click", () => { $("menuSheet").close(); copyLink(); });
+  $("mHelp").addEventListener("click", () => { $("menuSheet").close(); openSheet("helpSheet"); });
+  $("mResign").addEventListener("click", () => { $("menuSheet").close(); resign(); });
+  $("mNew").addEventListener("click", () => { $("menuSheet").close(); newGame(); });
+  $("home").addEventListener("click", e => { e.preventDefault(); if (view !== "setup") newGame(); });
+
+  // ---------- naposledy hrané ----------
+  function recentRooms() { return attempt(() => JSON.parse(store.get("zs-rooms") || "[]"), []).filter(r => r && /^[0-9a-z]{6,24}$/.test(r.id)); }
+  function remember() {
+    if (!room || !st) return;
+    const list = recentRooms().filter(r => r.id !== room.id);
+    list.unshift({ id: room.id, x: st.x, o: st.o, me });
+    store.set("zs-rooms", JSON.stringify(list.slice(0, 5)));
+  }
+
+  // ---------- založení ----------
+  async function createRoom(g) {
+    if (busy) return;
+    busy = true; render();
+    const id = randId(12);
+    const d = { app: "zviratka", g, v: 1, sx: device, so: "" };
+    try { await saveDoc(id, d); }
+    catch { busy = false; toast("Hru se nepodařilo založit. Zkontroluj připojení a zkus to znovu."); render(); return; }
+    busy = false; setGame(g); shareKind = "new";
+    room = { id, v: 1, sx: d.sx, so: d.so };
+    bootSeq++;
+    history.replaceState(null, "", location.pathname + location.search + "#r." + id);
+    setMe("x");
+    lastChange = Date.now(); schedule(2500);
+    setView("share");
+  }
+  function newGame() {
+    clearTimeout(pollT); bootSeq++;
+    room = null; me = null; st = null; game = null; busy = false; sel = null; net = "";
+    history.pushState(null, "", location.pathname + location.search);
+    showSetup();
+  }
+  const syncCustom = () => { $("customWrap").hidden = $("stakeSel").value !== "c"; };
+  $("stakeSel").addEventListener("change", syncCustom);
+  $("stakeCustom").addEventListener("input", () => { $("customCount").textContent = `${$("stakeCustom").value.length} / 40`; });
+  $("starterSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { starter = b.dataset.v; render(); } });
+  function showSetup() {
+    if (!$("nameX").value) $("nameX").value = store.get("zs-name") || "";
+    syncCustom(); setView("setup");
+  }
+  $("infoNew").addEventListener("click", newGame);
+  $("infoRetry").addEventListener("click", boot);
+  $("setupForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const x = $("nameX").value.trim().slice(0, 16), o = $("nameO").value.trim().slice(0, 16);
+    if (!x || !o || busy) return;
+    store.set("zs-name", x);
+    let k = $("stakeSel").value, kc = "";
+    if (k === "c") { kc = $("stakeCustom").value.trim().slice(0, 40); if (!kc) k = ""; }
+    createRoom({ x, o, s: starter, m: [], t: null, k, kc, w: [0, 0], r: "" });
+  });
+
+  // ---------- start ----------
+  function info(title, meta, retry) {
+    $("infoTitle").textContent = title;
+    $("infoMeta").textContent = meta; $("infoMeta").hidden = !meta;
+    $("infoRetry").hidden = !retry; $("infoNew").hidden = retry === null;
+    setView("info");
+  }
+  async function openRoom(id, seq) {
+    room = { id, v: -1, sx: "", so: "" };
+    info("Otevírám hru…", "", null);
+    let d;
+    try { d = await loadDoc(id); }
+    catch { if (seq === bootSeq) info("Hru se nepodařilo načíst.", "Zkontroluj připojení a zkus to znovu.", true); return; }
+    if (seq !== bootSeq) return;
+    const g = d && norm(d.g);
+    if (!g) { room = null; info("Tahle hra tu není.", "Odkaz je špatně zkopírovaný, nebo hra vypršela (ukládá se 30 dní od posledního tahu).", false); return; }
+    setGame(g); room.v = d.v; room.sx = d.sx || ""; room.so = d.so || "";
+    const saved = store.get("zs-r-" + id);
+    me = saved === "x" || saved === "o" ? saved : room.sx === device ? "x" : room.so === device ? "o" : null;
+    lastChange = Date.now(); schedule(2500);
+    if (!me && freeSeat() && !ended()) { setView("intro"); return; }
+    remember();
+    showGame(g, false);
+  }
+  function boot() {
+    const seq = ++bootSeq;
+    clearTimeout(pollT);
+    room = null; me = null; busy = false; sel = null; net = ""; fails = 0;
+    const h = (location.hash || "").replace(/^#/, "");
+    const r = /^r\.([0-9a-z]{6,24})$/.exec(h);
+    if (r) { openRoom(r[1], seq); return; }
+    st = null; game = null; showSetup();
+  }
+  window.addEventListener("hashchange", boot);
+  boot();
+})();
+</script>
+</body>
+</html>
