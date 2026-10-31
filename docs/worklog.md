@@ -1,5 +1,12 @@
 # Deník – Zvířátkové šógi
 
+## 2026-10-31 · Claude (shrnutí dne: pocit ze hry a dvě kola design-eye, nasazeno)
+- Pocit ze hry: přeběhnutí zkráceno na ~700 ms (soupeř vidí ~940 ms), oblouková dráha s otočením a změnou barvy, jeden kroužek při úderu, dopad do zásoby s počitadlem, stejná zvířátka v zásobě jako jeden kámen s číslem, stopa soupeřova tahu; odstraněny dekorace (gradienty pozadí, „dýchání“, houpání, lístky, paprsky).
+- Design-eye kolo 1 „NENÍ PROFI, ale blízko“ (a90f9c9): poslední tah šedě (červená jen pro sebrání a výhru), výběr a cílové tečky v barvě mé strany, razítko menší a uvnitř desky, nadpisy s word-spacing, jednotné zaoblení 10/14/22, plný přepínač „Kdo začíná“, nová žirafa.
+- Kolo 2 „PROFI, ale těsně“ (847f564): žirafa s volným okrajem pro tečky a zaobleným ramenem krku, razítko 36 % s textem min. 14 px, doposunutí k výsledku ~720 ms po razítku, vítězný kámen v barvě týmu, `.seat.on` jako linka místo šedofialové, cílové tečky 75 %, ikona sázky v hlavičce.
+- Nasazeno (push a Pages udělal koordinátor), živá stránka obsahuje `art-G`. Živé testy proti GitHub Pages: dva prohlížeče 33/0, desktop+iPhone 143/0, pocit 29/0 (PASS/FAIL); lokálně i engine 10. Finální živé screenshoty: `tests/shots/final/`.
+- Neověřeno: skutečný iPhone (headless WebKit je pomalý, plynulost jen z Chromia), vibrace.
+
 ## 2026-10-31 · Claude (kolo 3 po kritice design-eye, verdikt „PROFI, ale těsně“)
 - Hotovo lokálně: žirafa menší a níž, aby směrové tečky ležely na volném okraji, kratší růžky, krk končí zaobleným ramenem; razítko 36 % a text min. 14 px (`max(14px, 4.6cqi)`, `letter-spacing .02em`); doposunutí k výsledku a Odvetě ~720 ms po startu razítka (v testu v okně do 1,8 s po zobrazení konce); vítězný kámen v barvě týmu s 25% halem (červená jen pro sebrání a razítko); `.seat.on` průhledné s linkou `inset 0 -3px var(--pc)`; cílové tečky 75 % s halem 3 px; „o kafe“ v hlavičce má obrysovou SVG ikonu sázky (hrnek, špendlík, kopeček, klapka, otazník, medaile, vlajka) a váhu 700 v `--sumi`.
 - Celkem za den: pocit ze hry (kratší přeběhnutí, stopa soupeře, bez dekorací), dvě kola kritiky design-eye (poslední tah šedě, výběr a cíle v barvě strany, zaoblení 10/14/22, žirafa).
