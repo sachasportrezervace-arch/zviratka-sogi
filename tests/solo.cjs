@@ -1,7 +1,7 @@
 // Sólo režim („Zkusit sám“, adresa #solo): celé partie proti botovi v Chromiu desktop 1280×800 a ve WebKitu s devices["iPhone 13"].
 // Ověřuje: štítek Trénink, bot táhne sám s pauzou, tah zpět při bot-pauze, konec partie s „Znovu“ a „Vyzvat soupeře“, nové kolo (jiná varianta,
 // střídá se začátek), nulový síťový požadavek na mantledb.sh (ani při focus/visibilitychange), žádné tituly/série/úložiště místností,
-// rozvržení na iPhonu bez posouvání (obě zásoby i deska), kontrast textů (světlý i tmavý režim), chyby JavaScriptu.
+// rozvržení na iPhonu bez posouvání (obě zásoby i deska; úvod: „Zkusit sám“ vidět bez rolování na 390×664 a 375×667), kontrast textů (světlý i tmavý režim), chyby JavaScriptu.
 // node tests/solo.cjs [URL]   (výchozí http://127.0.0.1:8805/)   snímky: tests/shots/solo/ (proměnná SHOTS)
 const path = require("path");
 const fs = require("fs");
@@ -152,7 +152,7 @@ async function run(label, launcher, ctxOpts, entry, rounds) {
     L(`kolo ${round}: partie doběhla do konce (moje tahy ${n})`, await page.locator("#endBox").isVisible());
     // konec partie
     const prim = page.locator("#endPrimary"), sec = page.locator("#endSecondary");
-    L(`kolo ${round}: konec: hlavní „Znovu“, sekundární „Vyzvat soupeře“`, await prim.isVisible() && (await prim.innerText()) === "Znovu" && await sec.isVisible() && (await sec.innerText()) === "Vyzvat soupeře" && (await page.locator("#endBox .btn").count()) === 2);
+    L(`kolo ${round}: konec: hlavní „Znovu“, sekundární „Vyzvat soupeře“`, await prim.isVisible() && (await prim.innerText()) === "Znovu" && await sec.isVisible() && (await sec.innerText()) === "Vyzvat soupeře" && (await page.locator("#endBox .btn:visible").count()) === 2);
     L(`kolo ${round}: konec bez výběru variant, lístku se sázkou a titulů`, await page.locator("#pick").isHidden() && await page.locator("#pickSeg").isHidden() && await page.locator(".ticket").isHidden() && await page.locator("#tRanks").isHidden() && await page.locator(".disc.lak").count() === 0 && await page.locator("#hanko.sq").count() === 0);
     L(`kolo ${round}: skóre v hlavičce prázdné, endMeta s Trénink`, (await page.locator("#score").innerText()).trim() === "" && (await page.locator("#endMeta").innerText()).startsWith("Trénink · Kolo " + round));
     L(`kolo ${round}: konec: výsledek je napsaný (Vyhráváš / Vyhrává Bot / Remíza)`, /Vyhráváš|Vyhrává Bot|Remíza/.test(await page.locator("#endL2").innerText() + await page.locator("#endL1").innerText()), (await page.locator("#endL1").innerText()) + " | " + (await page.locator("#endL2").innerText()));
@@ -186,6 +186,32 @@ async function run(label, launcher, ctxOpts, entry, rounds) {
   L("žádné chyby JavaScriptu", errs.length === 0, errs.join(" | "));
   await browser.close();
 }
+// úvodní obrazovka na iPhonu: „Zkusit sám“ i hlavní výzva jsou vidět bez posouvání (390×664 = iPhone 13 v Safari, 375×667), světle i tmavě;
+// na vysokém displeji (390×844) zůstává řada zvířátek
+async function uvodIphone() {
+  const browser = await webkit.launch();
+  for (const [w, h] of [[390, 664], [375, 667], [390, 844]]) for (const cs of ["light", "dark"]) {
+    const ctx = await browser.newContext({ ...devices["iPhone 13"], viewport: { width: w, height: h }, colorScheme: cs });
+    const page = await ctx.newPage();
+    await page.goto(URL, { waitUntil: "load" });
+    await page.waitForSelector("#setup:not([hidden])");
+    await sleep(500);
+    const m = await page.evaluate(() => {
+      const r = s => document.querySelector(s).getBoundingClientRect(), btn = r("#soloBtn");
+      return { soloBottom: Math.round(btn.bottom), noteBottom: Math.round(r("#soloNote").bottom), subBottom: Math.round(r("#setupSubmit").bottom), subTop: Math.round(r("#setupSubmit").top), soloTop: Math.round(btn.top), soloH: Math.round(btn.height), ih: innerHeight, sh: document.documentElement.scrollHeight, sw: document.documentElement.scrollWidth, iw: innerWidth, quiet: document.getElementById("soloBtn").classList.contains("quiet"), cast: document.getElementById("setupCast").offsetHeight > 0 };
+    });
+    const tag = `iPhone ${w}×${h} ${cs === "dark" ? "tmavě" : "světle"}`;
+    const tall = h >= 800;
+    check(`úvod ${tag}: „Zkusit sám“ (tlačítko i věta pod ním) je celé vidět bez posouvání (bottom ≤ innerHeight)`, m.soloBottom <= m.ih && m.noteBottom <= m.ih, `tlačítko ${m.soloBottom}, věta ${m.noteBottom}, okno ${m.ih}`);
+    check(`úvod ${tag}: hlavní výzva „Založit hru“ je celá vidět a nad „Zkusit sám“`, m.subBottom <= m.ih && m.subBottom <= m.soloTop, `výzva ${m.subTop}–${m.subBottom}, sólo od ${m.soloTop}`);
+    check(`úvod ${tag}: stránka se nemusí rolovat (scrollHeight ≤ innerHeight, bez vodorovného posouvání)`, m.sh <= m.ih && m.sw <= m.iw, `${m.sh}/${m.ih}, ${m.sw}/${m.iw}`);
+    check(`úvod ${tag}: „Zkusit sám“ je tichý (quiet) a cíl ≥ 44 px`, m.quiet && m.soloH >= 43.5, `${m.soloH} px`);
+    check(`úvod ${tag}: řada zvířátek ${tall ? "zůstává na vysokém displeji" : "je na nízkém displeji skrytá"}`, m.cast === tall);
+    await page.screenshot({ path: path.join(SHOTS, `uvod-iphone-${w}x${h}-${cs}.png`) });
+    await ctx.close();
+  }
+  await browser.close();
+}
 const vrs = [];
 
 (async () => {
@@ -197,6 +223,7 @@ const vrs = [];
     await run(label, launcher, opts, "tlačítko", 2);
     await run(label, launcher, opts, "hash", 1);
   }));
+  await uvodIphone();
   console.log(`\n${pass} prošlo, ${fail} selhalo`);
   fs.writeFileSync(path.join(SHOTS, "vysledek.txt"), log.join("\n") + `\n${pass} prošlo, ${fail} selhalo\n`);
   process.exit(fail ? 1 : 0);

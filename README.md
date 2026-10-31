@@ -26,7 +26,8 @@ Architektura a synchronizace převzaté z Psaníčka: statická stránka na GitH
 - `tests/pocit.cjs` – pocit ze hry (29 kontrol, Chromium desktop + WebKit iPhone 13, falešná síť): výběr a cíle naběhnou hned i uprostřed animace soupeřova tahu,
   délka přeběhnutí, text a značky posledního tahu, počitadlo stejných zvířátek v zásobě, razítko mimo vítěznou figurku, žádná nekonečná animace, reduced motion.
   `node tests/pocit.cjs [URL]`
-- `tests/solo.cjs` – sólo režim proti botovi (viz sekce Sólo): `node tests/solo.cjs [URL]`
+- `tests/solo.cjs` – sólo režim proti botovi (viz sekce Sólo), včetně kontroly úvodní obrazovky na iPhonu: `node tests/solo.cjs [URL]`
+- `tests/herna.cjs` – napojení na Hernu (viz sekce Herna): `node tests/herna.cjs [URL]` (na localhostu falešná síť, jinak skutečný mantledb.sh; `SITE=fake|real` vynutí)
 - `tests/render-review.cjs` – finální rendery pro kritiku designu do `tests/shots/review/` (desktop 1280×800, iPhone 13, tmavý režim mobilu): `node tests/render-review.cjs [URL]`
 - `manifest.webmanifest`, `icons/` – aplikace na plochu. Ikony (lev na dřevěném kameni s indigovým okrajem) se generují z kresby lva:
   `node tools/make-icons.cjs` (Playwright vyrenderuje `icons/icon.svg` do PNG 192, 512 a 180 pro `apple-touch-icon`).
@@ -72,6 +73,17 @@ Architektura a synchronizace převzaté z Psaníčka: statická stránka na GitH
 - Bot (`Sogi.bot`, `engine.js`): vyhrávající tah (chycení lva, lev v cíli) vezme vždy; jinak se vyhne tahům, po kterých by soupeř hned vyhrál; ze zbylých bere nejcennější kus (lev > žirafa = slon > slepice > kuřátko), jinak náhoda. Táhne po pauze 700–900 ms (a až po dohrání tvého tahu; s „omezit pohyb“ 350–450 ms) stejnou animací jako soupeř v ostré hře. Hratelný, ne dokonalý: dívá se jen o jeden tah dopředu.
 - Konec partie: hlavní „Znovu“ (nové kolo), sekundární „Vyzvat soupeře“ (zruší sólo, adresa bez `#solo`, úvodní obrazovka se založením výzvy).
 - `tests/solo.cjs`: celé partie s botem v Chromiu desktop 1280×800 a WebKitu `devices["iPhone 13"]`, vstup tlačítkem (2 kola) i adresou `#solo`, nulový síťový požadavek na sync, rozvržení na iPhonu bez posouvání, kontrast světle i tmavě, chyby JavaScriptu: `node tests/solo.cjs [URL]` (snímky `tests/shots/solo/`).
+- Úvodní obrazovka na nízkém telefonu na výšku (okno ≤ 800 px): řada zvířátek se skryje (je v nápovědě i ve výzvě), takže hlavní výzva „Založit hru“ i tichý odkaz „Zkusit sám“ jsou vidět bez posouvání (iPhone 13 390×664 i 375×667, světle i tmavě; na vysokém displeji řada zůstává). Hlídá `uvodIphone()` v `tests/solo.cjs` (`getBoundingClientRect().bottom ≤ innerHeight`).
+
+## Herna (místnost, kde se hry střídají)
+
+Hra umí protokol Herny verze 1 (`react-apps/HERNA-PROTOKOL.md`): `<meta name="herna-protokol" content="1">` v `index.html`.
+- Adresa `#herna=1&m=…&r=…&seat=0|1&names=A,B&zaklada=0|1` přeskočí úvod, setup i výzvu. Hráč se `zaklada=1` rovnou založí dokument `r` na `mantledb.sh` (stejný dokument `zviratka-<r>/hra` jako ostrá hra) se jmény z `names`, 1. kolo Klasika, začíná se losem, bez sázky. Druhý hráč (`zaklada=0`) čeká („Čeká se, až hra naskočí“), jakmile dokument vznikne, sám si sedne. Do té doby zakladatel netáhne (fáze `ceka`), takže se zápisy nepřebijí.
+- Zakladatel dokumentu je vždy „x“; dokument nese `hs` = sedadlo Herny, které za „x“ hraje. Hráč se `seat=s` hraje za `names[s]`, i po obnovení stránky (nezávisle na tokenu zařízení). Jména se dekódují po jednom (`encodeURIComponent`, oddělená čárkou).
+- Skryté: sdílení odkazu, „Zkusit sám“, kopírování odkazu, „Založit novou hru“, logo jako odkaz, tlačítko celé obrazovky. Zbývá nápověda, vzdát a odveta (poražený vybírá variantu jako dřív).
+- Zprávy rodiči (`postMessage({herna:1,…}, "*")`, jen v rámu): `pripraveno` při načtení; `stav` `ceka` (čeká se na soupeře / na dokument), `hraje`, `konec` (až po dohrání animace posledního tahu); `vysledek` `{partie: "<r>:<číslo kola>", vitez: sedadlo Herny | null}` jednou na okno (remíza = `null`); `jina-hra` z nového tlačítka „Jiná hra“ na konci partie (místo „Zkopírovat odkaz“).
+- Bez platného `herna=1` (chybí/špatné `r`, `seat`) se hra chová jako dřív: úvod, `#solo`, série, žádné zprávy.
+- `tests/herna.cjs`: hra v iframe pod zkušebním rodičem s 48px lištou, Chromium desktop (Mark) + WebKit iPhone 13 (Radka); obě rozdělení sedadel, jména s čárkou / `&` / `%`, tři partie (výhra, výhra, remíza) s výsledkem pro správné sedadlo, odveta, „Jiná hra“, obnovení stránky, čekající zakladatel i čekající host, hra bez Herny.
 
 ## Pravidla a zdroj
 

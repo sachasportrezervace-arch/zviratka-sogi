@@ -2,6 +2,12 @@
 
 PŘEVZATO 31. 10. – dodělává session na účtu P, jiná session sem nepíše.
 
+## 2026-10-31 · Claude (napojení na Hernu + „Zkusit sám“ na iPhonu)
+- Hotovo: protokol Herny v1 (meta řádek, `#herna=1…` bez úvodu/výzvy, zprávy pripraveno / stav / vysledek / jina-hra, skryté sdílení a „Zkusit sám“); `tests/herna.cjs` 43/0 (iframe, 2 prohlížeče, falešná síť). Úvod na iPhonu: na nízkém telefonu se skryje řada zvířátek, „Zkusit sám“ je celé vidět (390×664 i 375×667), kontrola v `tests/solo.cjs`.
+- Rozhodnuto: zakladatel dokumentu je „x“, `hs` v dokumentu = sedadlo Herny; zakladatel netáhne, dokud druhý nesedí (jinak by se zápisy přebily).
+- Testy lokálně (8805): engine 30/0, solo 141/0, tri-partie 42/0, dva-prohlížece 46/0, desktop-iphone 159/0, pocit 28/1 (iPhone přeběhnutí 1107–1122 ms proti 1100; bez mých změn 1597 ms, tedy zátěž stroje).
+- Neověřeno: skutečný iPhone a skutečná Herna s touhle hrou (jen zkušební rodič).
+
 ## 2026-10-31 · Claude (sólo režim „Zkusit sám“ / #solo)
 - Hotovo (a41f850, Pages build exit 0): tlačítko „Zkusit sám“ pod hlavní výzvou, `#solo` otevře rovnou; bot `Sogi.bot` v engine.js (vyhrávající tah, nepustí lva do šachu na 1 tah, bere nejcennější, jinak náhoda; pauza 700–900 ms); `room.solo` = žádná síť, místnost ani zápis do seznamu her, skóre/tituly/lak se nepočítají; štítek `Trénink · Kolo N · Varianta`; konec „Znovu“ / „Vyzvat soupeře“.
 - Rozhodnuto: „Vzít tah zpět“ v sólu není (okno ~0,8 s, tlačítko by jen blikalo); kolo 2+ bere náhodnou variantu z `offer`, začátek se střídá.
