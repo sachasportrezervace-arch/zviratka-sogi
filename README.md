@@ -9,8 +9,8 @@ Architektura a synchronizace převzaté z Psaníčka: statická stránka na GitH
 ## Soubory
 
 - `index.html` – celá hra (vzhled, kresby, místnost, animace).
-- `engine.js` – pravidla: tahy, sebrání, položení, proměna, výhra, opakování pozice; varianty kola (`VARIANTS`, `offer`) a tituly (`RANKS`, `rank`).
-- `tests/engine.test.cjs` – 29 testů pravidel, variant a titulů včetně férovosti (žádná vynucená výhra do 9 půltahů): `node tests/engine.test.cjs`
+- `engine.js` – pravidla: tahy, sebrání, položení, proměna, výhra, opakování pozice; varianty kola (`VARIANTS`, `offer`) a tituly (`RANKS`, `rank`); jednoduchý bot pro sólo (`bot`).
+- `tests/engine.test.cjs` – 30 testů pravidel, variant, titulů a bota včetně férovosti (žádná vynucená výhra do 9 půltahů): `node tests/engine.test.cjs`
 - `tests/tri-partie.cjs` – playtest 4 kol za sebou (Chromium desktop + WebKit iPhone 13, falešná sdílená síť): kola se liší, poražený vybírá,
   vítěz odvetu založit nemůže, tituly, lakovaný okraj, hranaté razítko, kontrast, rozvržení: `node tests/tri-partie.cjs [URL]` (snímky `tests/shots/tri-partie/`)
 - `tests/render-varianty.cjs` – rendery variant, výběru a titulů pro kritiku designu do `tests/shots/review-varianty/`
@@ -26,6 +26,7 @@ Architektura a synchronizace převzaté z Psaníčka: statická stránka na GitH
 - `tests/pocit.cjs` – pocit ze hry (29 kontrol, Chromium desktop + WebKit iPhone 13, falešná síť): výběr a cíle naběhnou hned i uprostřed animace soupeřova tahu,
   délka přeběhnutí, text a značky posledního tahu, počitadlo stejných zvířátek v zásobě, razítko mimo vítěznou figurku, žádná nekonečná animace, reduced motion.
   `node tests/pocit.cjs [URL]`
+- `tests/solo.cjs` – sólo režim proti botovi (viz sekce Sólo): `node tests/solo.cjs [URL]`
 - `tests/render-review.cjs` – finální rendery pro kritiku designu do `tests/shots/review/` (desktop 1280×800, iPhone 13, tmavý režim mobilu): `node tests/render-review.cjs [URL]`
 - `manifest.webmanifest`, `icons/` – aplikace na plochu. Ikony (lev na dřevěném kameni s indigovým okrajem) se generují z kresby lva:
   `node tools/make-icons.cjs` (Playwright vyrenderuje `icons/icon.svg` do PNG 192, 512 a 180 pro `apple-touch-icon`).
@@ -62,6 +63,15 @@ Architektura a synchronizace převzaté z Psaníčka: statická stránka na GitH
 - Dokument partie nese `vr` (varianta) a `n` (číslo kola, roste i po remíze). Starý dokument bez `vr` se hraje jako Klasika.
 - Tituly podle výher v sérii: 1 Učeň, 3 Strážce zásoby, 5 Lví mistr. Ukazují se u jména hráče a v lístku výsledku; nově dosažený titul
   se v konci partie jednou krátce zvýrazní. Od 3 výher má kotouč hráče tenký lakovaný okraj a razítko jeho výhry je hranaté.
+
+## Sólo (trénink proti botovi)
+
+- Úvodní obrazovka má pod hlavní výzvou tichou volbu **„Zkusit sám“**; stejný režim otevře přímo adresa `…/#solo`. Hráč je dole (tvé jméno z úvodu, jinak „Ty“), soupeř je **Bot**.
+- Jen v okně: žádný dotaz na `mantledb.sh`, žádná místnost ani odkaz, nic se nepíše do seznamu rozehraných her. Skóre, série, tituly, lakovaný okraj a hranatá razítka se v sólu nikdy nepočítají. Sázka, „Kdo začíná“, kopírování odkazu, přihlížení, výběr varianty a „Vzít tah zpět“ se v sólu neukazují.
+- Ve hře je nenápadný štítek `Trénink · Kolo N · Varianta`. 1. kolo je Klasika, další kolo vezme náhodnou z nabídky `Sogi.offer` (jiná než právě hraná), začátek se střídá (první táhne hráč).
+- Bot (`Sogi.bot`, `engine.js`): vyhrávající tah (chycení lva, lev v cíli) vezme vždy; jinak se vyhne tahům, po kterých by soupeř hned vyhrál; ze zbylých bere nejcennější kus (lev > žirafa = slon > slepice > kuřátko), jinak náhoda. Táhne po pauze 700–900 ms (a až po dohrání tvého tahu; s „omezit pohyb“ 350–450 ms) stejnou animací jako soupeř v ostré hře. Hratelný, ne dokonalý: dívá se jen o jeden tah dopředu.
+- Konec partie: hlavní „Znovu“ (nové kolo), sekundární „Vyzvat soupeře“ (zruší sólo, adresa bez `#solo`, úvodní obrazovka se založením výzvy).
+- `tests/solo.cjs`: celé partie s botem v Chromiu desktop 1280×800 a WebKitu `devices["iPhone 13"]`, vstup tlačítkem (2 kola) i adresou `#solo`, nulový síťový požadavek na sync, rozvržení na iPhonu bez posouvání, kontrast světle i tmavě, chyby JavaScriptu: `node tests/solo.cjs [URL]` (snímky `tests/shots/solo/`).
 
 ## Pravidla a zdroj
 

@@ -182,4 +182,34 @@ t("tituly: 0 nic, 1 Učeň, 3 Strážce zásoby, 5 Lví mistr (kosmetika od úro
   assert.deepEqual([0, 1, 2, 3, 4, 5, 9].map(S.rank), [0, 1, 1, 2, 2, 3, 3]);
   assert.deepEqual(S.RANKS, ["", "Učeň", "Strážce zásoby", "Lví mistr"]);
 });
+t("bot: vezme vyhrávající tah, nenechá si chytit lva, bere, a partie bota s botem jsou legální a končí", () => {
+  const mk = (cells, turn) => { const b = new Array(12).fill(null); let id = 0; cells.forEach(([i, tp, p]) => { b[i] = { t: tp, p, id: id++ }; }); return { b, h: { x: [], o: [] }, turn }; };
+  // chycení lva
+  const w = mk([[4, "L", "x"], [1, "L", "o"], [11, "G", "o"]], "x");
+  for (let k = 0; k < 10; k++) assert.deepEqual(S.bot(w), { k: "m", f: 4, to: 1 });
+  // lev do cíle
+  const g1 = mk([[3, "L", "x"], [11, "L", "o"]], "x");
+  for (let k = 0; k < 10; k++) assert.ok(S.apply(g1, S.bot(g1)).info.lionHome);
+  // chycení žirafy by vedlo ke ztrátě lva: bot ho nesebere a lva neodkryje
+  const sv = mk([[7, "L", "x"], [3, "G", "o"], [0, "L", "o"]], "x");
+  for (let k = 0; k < 60; k++) {
+    const m = S.bot(sv), r = S.apply(sv, m);
+    assert.ok(!S.moves(r.s).some(m2 => S.apply(r.s, m2).info.lionCaught), "bot nenechá chytit lva: " + S.enc(m));
+  }
+  // sebrání má přednost před náhodným tahem
+  const cp = mk([[4, "G", "x"], [3, "E", "o"], [11, "L", "x"], [0, "L", "o"]], "x");
+  for (let k = 0; k < 20; k++) assert.ok(S.apply(cp, S.bot(cp)).info.captured, "bere");
+  // celé partie bota s botem jsou legální a končí
+  for (let gm = 0; gm < 30; gm++) {
+    const st0 = gm % 2 ? "x" : "o", vr = S.VR_KEYS[gm % 5], ms = [];
+    let s = S.initial(st0, vr), done = false;
+    for (let i = 0; i < 400 && !done; i++) {
+      const m = S.bot(s); if (!m) { done = true; break; }
+      assert.ok(S.legal(s, m)); ms.push(S.enc(m)); s = S.apply(s, m).s;
+      const pl = S.play({ s: st0, vr, m: ms });
+      assert.ok(pl.ok); done = !!pl.result;
+    }
+    assert.ok(done, "partie bota skončila");
+  }
+});
 console.log(`\n${n} testů prošlo`);

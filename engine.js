@@ -163,6 +163,25 @@
     return { s, prev, last, result, ok, count: seen.get(key(s)) || 1 };
   }
 
-  root.Sogi = { ROWS, COLS, CELLS, DIRS, NAMES, VARIANTS, VR_KEYS, RANKS, vrOf, offer, rank, other, goalRow, rc, initial, reach, attacked, moves, legal, enc, dec, apply, key, play };
+  // jednoduchý bot pro sólo režim: vyhrávající tah vezme, jinak se vyhne tahu, po kterém soupeř hned vyhraje,
+  // z bezpečných dává přednost sebrání (lev > žirafa = slon > slepice > kuřátko), jinak náhoda. Hratelný, ne dokonalý.
+  const CAP_VAL = { L: 9, G: 3, E: 3, H: 2, C: 1 };
+  const wins = r => r.info.lionCaught || r.info.lionHome;
+  function bot(s, rnd) {
+    rnd = rnd || Math.random;
+    const ms = moves(s);
+    if (!ms.length) return null;
+    const pick = a => a[Math.floor(rnd() * a.length)];
+    const rs = ms.map(m => ({ m, r: apply(s, m) }));
+    const win = rs.filter(x => wins(x.r));
+    if (win.length) return pick(win).m;
+    const safe = rs.filter(x => !moves(x.r.s).some(m2 => wins(apply(x.r.s, m2))));
+    const pool = safe.length ? safe : rs;
+    const val = x => x.r.info.captured ? CAP_VAL[x.r.info.captured.t] : 0;
+    const best = Math.max(...pool.map(val));
+    return pick(best > 0 ? pool.filter(x => val(x) === best) : pool).m;
+  }
+
+  root.Sogi = { bot,  ROWS, COLS, CELLS, DIRS, NAMES, VARIANTS, VR_KEYS, RANKS, vrOf, offer, rank, other, goalRow, rc, initial, reach, attacked, moves, legal, enc, dec, apply, key, play };
   if (typeof module !== "undefined") module.exports = root.Sogi;
 })(typeof globalThis !== "undefined" ? globalThis : this);

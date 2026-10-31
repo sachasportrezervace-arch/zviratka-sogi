@@ -226,6 +226,9 @@
   .ticket b { display: block; font-size: 16px; }
   .ticket .ser { margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--sumi-2); font-variant-numeric: tabular-nums; }
   .result .stack { margin-top: 10px; }
+  .app.solo .ticket { display: none; }
+  .soloentry { display: grid; justify-items: center; gap: 0; margin-top: 4px; text-align: center; }
+  .soloentry small { font-size: 13px; font-weight: 700; color: var(--sumi-2); }
   .pick { margin: 10px 0 0; text-align: left; }
   .pick small { display: block; margin: 0 2px 6px; font-weight: 700; font-size: 12px; letter-spacing: .04em; color: var(--sumi-2); }
   .pick .seg { background: var(--washi); }
@@ -399,6 +402,7 @@
         </div>
         <button class="btn primary" id="setupSubmit" type="submit">Založit hru</button>
       </form>
+      <div class="soloentry"><button class="btn quiet" id="soloBtn" type="button" aria-describedby="soloNote">Zkusit sám</button><small id="soloNote">Trénink proti botovi, nic se neposílá.</small></div>
       <div class="recent" id="recent" hidden><h2>Rozehrané na tomhle zařízení</h2><div id="recentList"></div></div>
     </section>
 
@@ -693,12 +697,14 @@
   const turn = () => game.s.turn;
   const canPlay = () => !!st && !!room && !!me && !busy && !ended() && turn() === me;
   const persp = () => me || "x";
-  const lastIsMine = () => !!me && st.m.length > 0 && !ended() && turn() !== me;
+  const lastIsMine = () => !isSolo() && !!me && st.m.length > 0 && !ended() && turn() !== me;
   const freeSeat = () => !room ? null : !room.sx ? "x" : !room.so ? "o" : null;
   const setGame = g => { st = g; game = S.play(g); };
   const tahu = n => n === 1 ? "tah" : n >= 2 && n <= 4 ? "tahy" : "tahů";
   const buzz = (p = 12) => attempt(() => navigator.vibrate && navigator.vibrate(p));
-  function seriesAfter() { const w = [...st.w], r = game.result; if (r && r.w) w[r.w === "x" ? 0 : 1]++; return w; }
+  const isSolo = () => !!(room && room.solo);
+  // v sólu se skóre, tituly ani kosmetika nikdy nepočítají
+  function seriesAfter() { const w = [...st.w], r = game.result; if (isSolo()) return w; if (r && r.w) w[r.w === "x" ? 0 : 1]++; return w; }
   const winsNow = () => ended() ? seriesAfter() : st.w;
   const rankOf = p => S.rank(winsNow()[p === "x" ? 0 : 1]);
   // titul, který vítěz právě dosáhl touto partií (nebo null)
@@ -717,6 +723,7 @@
     ["setup", "info", "intro", "share"].forEach(k => $(k).hidden = v !== k);
     $("game").hidden = v !== "play";
     $("app").classList.toggle("playing", v === "play");
+    $("app").classList.toggle("solo", v === "play" && isSolo());
     $("app").classList.toggle("wide", v === "setup" || v === "intro");
     $("aside").hidden = !(v === "setup" || v === "intro");
     render();
@@ -777,7 +784,7 @@
 
   function seatHTML(p) {
     const on = !ended() && turn() === p;
-    const rt = S.RANKS[rankOf(p)], base = p === me ? (on ? "jsi na tahu" : "ty") : on ? "na tahu" : me ? "soupeř" : "";
+    const rt = S.RANKS[rankOf(p)], base = p === me ? (on ? "jsi na tahu" : "ty") : on ? "na tahu" : me ? (isSolo() ? "bot" : "soupeř") : "";
     const tag = [base, rt].filter(Boolean).join(" · ");
     return { on, html: `<div class="who">${discHTML(p, nameOf(st, p), rankOf(p) >= 2)}<span><span class="nm"></span><span class="tag">${tag}</span></span></div><div class="tray own-${p}" data-tray="${p}" aria-label="Zásoba: ${p === me ? "tvoje" : nameOf(st, p)}"></div>` };
   }
@@ -896,8 +903,8 @@
       else sub = oppMoveText() || (game.s.h[me].length ? "Táhni zvířátkem, nebo polož něco ze zásoby." : "Tečky na kameni ukazují, kam zvířátko smí.");
       if (game.count === 2) sub = "Pozor: tahle pozice už tu jednou byla. Potřetí je remíza.";
     } else if (freeSeat() === opp) { h = "Odkaz ještě nikdo neotevřel."; sub = "Pošli ho do chatu. Jakmile soupeř přijme výzvu, uvidíš to tady."; }
-    else { h = `${nameOf(st, opp)} přemýšlí…`; sub = "Tah se tu objeví sám. Stránku můžeš klidně zavřít."; }
-    $("kolo").textContent = `Kolo ${st.n} · ${S.VARIANTS[st.vr].n}`; $("kolo").dataset.vr = st.vr;
+    else { h = `${nameOf(st, opp)} přemýšlí…`; sub = isSolo() ? "" : "Tah se tu objeví sám. Stránku můžeš klidně zavřít."; }
+    $("kolo").textContent = `${isSolo() ? "Trénink · " : ""}Kolo ${st.n} · ${S.VARIANTS[st.vr].n}`; $("kolo").dataset.vr = st.vr;
     $("status").textContent = h;
     $("sub").textContent = sub; $("sub").hidden = !sub;
     $("undoBtn").hidden = !lastIsMine() || busy;
@@ -951,7 +958,7 @@
     else if (!me) { $("endL1").textContent = WHY[r.why].third; $("endL2").textContent = `Vyhrává ${W}.`; $("endL2").className = "l2"; }
     else if (won) { $("endL1").textContent = WHY[r.why].win; $("endL2").textContent = "Vyhráváš!"; $("endL2").className = "l2 win"; }
     else { $("endL1").textContent = WHY[r.why].lose; $("endL2").textContent = `Vyhrává ${W}. Tentokrát.`; $("endL2").className = "l2"; }
-    $("endMeta").textContent = `Kolo ${st.n} · ${S.VARIANTS[st.vr].n} · ${st.m.length} ${tahu(st.m.length)}`;
+    $("endMeta").textContent = `${isSolo() ? "Trénink · " : ""}Kolo ${st.n} · ${S.VARIANTS[st.vr].n} · ${st.m.length} ${tahu(st.m.length)}`;
     $("tLabel").textContent = s ? "Sázka" : "Výsledek";
     $("tRes").textContent = !r.w ? (s ? "Sázka se přesouvá do odvety." : "Nikdo nevyhrál.")
       : !me ? (s ? s.third(W, L) : `Vyhrává ${W}.`)
@@ -965,6 +972,7 @@
     if (!me) $("endSecondary").textContent = "Zkopírovat odkaz na hru";
     else if (!r.w || won) { $("endPrimary").textContent = `Odveta (začíná ${loser})`; $("endSecondary").textContent = "Zkopírovat odkaz na hru"; }
     else { $("endPrimary").textContent = "Chci odvetu"; $("endSecondary").textContent = "Uznat porážku (zkopíruje zprávu)"; }
+    if (isSolo()) { $("endPrimary").hidden = false; $("endPrimary").textContent = "Znovu"; $("endSecondary").textContent = "Vyzvat soupeře"; }
   }
   // tituly za výhry v sérii; nově dosažený titul se v konci partie jednou krátce zvýrazní
   const titleSeen = new Set();
@@ -992,6 +1000,7 @@
   }
   // další kolo: poražený vybírá ze 2 nabídnutých variant, jinak (výhra, remíza) platí první
   function renderPick() {
+    if (isSolo()) { $("pick").hidden = true; return; }
     const r = game.result, off = S.offer(room.id, st.n + 1, st.vr), chooser = r.w ? other(r.w) : null, choose = !!me && me === chooser;
     const key = room.id + ":" + st.n;
     if (pickKey !== key) { pickKey = key; pickVr = off[0]; }
@@ -1194,6 +1203,34 @@
       if (game.result) endBuzz(t);
       say(narrate(info, g) + (game.result ? " " + $("endL1").textContent + " " + $("endL2").textContent + (newTitle() ? " Nový titul: " + newTitle().name + "." : "") : ""));
     }
+    if (isSolo()) botTurn();
+  }
+
+  // ---------- sólo: trénink proti botovi, jen v tomhle okně (žádná síť, místnost, série ani tituly) ----------
+  let botT = null, botSeq = 0;
+  const stopBot = () => { clearTimeout(botT); botSeq++; };
+  function startSolo() {
+    stopBot(); clearTimeout(pollT); ++bootSeq;
+    const name = (store.get("zs-name") || "").trim().slice(0, 16) || "Ty";
+    room = { id: "solo-" + randId(8), v: 0, sx: device, so: "bot", solo: true };
+    me = "x"; busy = false; sel = null; net = ""; fails = 0; st = null; game = null;
+    showGame({ x: name, o: "Bot", s: "x", m: [], t: null, k: "", kc: "", w: [0, 0], r: "", vr: "k", n: 1 }, false);
+  }
+  // bot táhne po krátké pauze, aby šlo vidět, co udělal (po dohrání animace tvého tahu)
+  function botTurn() {
+    clearTimeout(botT);
+    if (!isSolo() || !game || ended() || turn() === me) return;
+    const seq = botSeq, sid = room.id;
+    const wait = calm() ? 350 + Math.random() * 100 : 700 + Math.random() * 200;
+    const delay = Math.max(wait, animUntil - Date.now() + (calm() ? 100 : 250));
+    botT = setTimeout(() => {
+      if (seq !== botSeq || !isSolo() || room.id !== sid || ended() || turn() === me) return;
+      const mv = S.bot(game.s);
+      if (!mv) return;
+      const next = clone(st);
+      next.m.push(S.enc(mv)); next.t = Math.floor(Date.now() / 60000);
+      showGame(next, true);
+    }, delay);
   }
 
   // konec partie: dotek, který rozliší výhru a prohru, a na úzkém displeji doposouvání k výsledku a tlačítku odvety
@@ -1262,7 +1299,7 @@
   function schedule(ms) { clearTimeout(pollT); pollT = setTimeout(poll, ms); }
   async function poll() {
     clearTimeout(pollT);
-    if (!room || room.v < 0 || document.hidden) return;
+    if (!room || room.solo || room.v < 0 || document.hidden) return;
     if (busy) { schedule(1500); return; }
     const id = room.id, seq = ++pollSeq;
     try {
@@ -1277,7 +1314,7 @@
     }
     schedule(interval());
   }
-  function wake() { if (room && !document.hidden) { lastChange = Date.now(); poll(); } }
+  function wake() { if (room && !room.solo && !document.hidden) { lastChange = Date.now(); poll(); } }
   document.addEventListener("visibilitychange", wake);
   window.addEventListener("pageshow", e => { if (e.persisted) wake(); });
   window.addEventListener("online", wake);
@@ -1314,6 +1351,7 @@
     // tah se ukáže hned, zápis běží na pozadí; když nevyjde, pozice se vrátí
     showGame(next, true);
     buzz();
+    if (isSolo()) return;                     // sólo: nic se nezapisuje, odpoví bot
     const ok = await commit(next, cur => cur.m.length === len && !cur.r && S.play(cur).s.turn === me, "", prevSt);
     if (!ok) { if (st === next) { animUntil = 0; showGame(prevSt, false); } return; }
     render();
@@ -1330,6 +1368,14 @@
 
   async function rematch() {
     if (busy || !me || !ended()) return;
+    if (isSolo()) {
+      // další kolo: varianta z nabídky jako v ostré hře, začíná ten, kdo minule nezačínal
+      const n = st.n + 1, off = S.offer(room.id, n, st.vr), vr = off[Math.floor(Math.random() * off.length)];
+      stopBot();
+      showGame({ ...clone(st), s: other(st.s), m: [], t: null, w: [0, 0], r: "", vr, n }, false);
+      say(`Kolo ${n}, ${S.VARIANTS[vr].n}. Začíná ${nameOf(st, st.s)}.`);
+      return;
+    }
     const r = game.result;
     // po výhře zakládá odvetu poražený: vybere jednu z nabídnuté dvojice a začne; po remíze kdokoli, platí první nabídnutá
     const n = st.n + 1, off = S.offer(room.id, n, st.vr), chooser = r.w ? other(r.w) : null;
@@ -1344,12 +1390,14 @@
     if (busy || !me || ended()) return;
     if (!confirm("Opravdu vzdát tuhle partii?")) return;
     const len = st.m.length, next = { ...clone(st), r: me };
+    if (isSolo()) { stopBot(); showGame(next, false); return; }
     if (!await commit(next, cur => cur.m.length === len && !S.play(cur).result)) return;
     showGame(next, false);
   }
   $("endPrimary").addEventListener("click", rematch);
   $("endSecondary").addEventListener("click", () => {
     const r = game.result;
+    if (isSolo()) { newGame(); return; }       // „Vyzvat soupeře“: pryč ze sóla na úvodní obrazovku
     if (me && r && r.w && r.w !== me) copy(concedeText(), "Zkopírováno, vlož to do chatu");
     else copyLink();
   });
@@ -1401,7 +1449,7 @@
   document.querySelectorAll("dialog").forEach(d => d.addEventListener("click", e => { if (e.target === d) d.close(); }));
   $("helpBtn").addEventListener("click", () => openSheet("helpSheet"));
   $("introHelp").addEventListener("click", () => openSheet("helpSheet"));
-  $("menuBtn").addEventListener("click", () => { $("mResign").hidden = !me || ended(); openSheet("menuSheet"); });
+  $("menuBtn").addEventListener("click", () => { $("mCopy").hidden = isSolo(); $("mResign").hidden = !me || ended(); openSheet("menuSheet"); });
   $("mCopy").addEventListener("click", () => { $("menuSheet").close(); copyLink(); });
   $("mHelp").addEventListener("click", () => { $("menuSheet").close(); openSheet("helpSheet"); });
   $("mResign").addEventListener("click", () => { $("menuSheet").close(); resign(); });
@@ -1447,7 +1495,7 @@
   // ---------- naposledy hrané ----------
   function recentRooms() { return attempt(() => JSON.parse(store.get("zs-rooms") || "[]"), []).filter(r => r && /^[0-9a-z]{6,24}$/.test(r.id)); }
   function remember() {
-    if (!room || !st) return;
+    if (!room || room.solo || !st) return;
     const list = recentRooms().filter(r => r.id !== room.id);
     list.unshift({ id: room.id, x: st.x, o: st.o, me });
     store.set("zs-rooms", JSON.stringify(list.slice(0, 5)));
@@ -1470,7 +1518,7 @@
     setView("share");
   }
   function newGame() {
-    clearTimeout(pollT); bootSeq++;
+    clearTimeout(pollT); stopBot(); bootSeq++;
     room = null; me = null; st = null; game = null; busy = false; sel = null; net = "";
     history.pushState(null, "", location.pathname + location.search);
     showSetup();
@@ -1483,6 +1531,7 @@
     if (!$("nameX").value) $("nameX").value = store.get("zs-name") || "";
     syncCustom(); setView("setup");
   }
+  $("soloBtn").addEventListener("click", () => { location.hash = "#solo"; });   // hashchange → boot → startSolo (zpět vrátí na úvod)
   $("infoNew").addEventListener("click", newGame);
   $("infoRetry").addEventListener("click", boot);
   $("setupForm").addEventListener("submit", ev => {
@@ -1521,9 +1570,10 @@
   }
   function boot() {
     const seq = ++bootSeq;
-    clearTimeout(pollT);
+    clearTimeout(pollT); stopBot();
     room = null; me = null; busy = false; sel = null; net = ""; fails = 0;
     const h = (location.hash || "").replace(/^#/, "");
+    if (h === "solo") { startSolo(); return; }
     const r = /^r\.([0-9a-z]{6,24})$/.exec(h);
     if (r) { openRoom(r[1], seq); return; }
     st = null; game = null; showSetup();
