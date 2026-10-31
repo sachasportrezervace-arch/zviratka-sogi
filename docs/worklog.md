@@ -2,6 +2,12 @@
 
 PŘEVZATO 31. 10. – dodělává session na účtu P, jiná session sem nepíše.
 
+## 2026-10-31 · Claude (sólo režim „Zkusit sám“ / #solo)
+- Hotovo (a41f850, Pages build exit 0): tlačítko „Zkusit sám“ pod hlavní výzvou, `#solo` otevře rovnou; bot `Sogi.bot` v engine.js (vyhrávající tah, nepustí lva do šachu na 1 tah, bere nejcennější, jinak náhoda; pauza 700–900 ms); `room.solo` = žádná síť, místnost ani zápis do seznamu her, skóre/tituly/lak se nepočítají; štítek `Trénink · Kolo N · Varianta`; konec „Znovu“ / „Vyzvat soupeře“.
+- Rozhodnuto: „Vzít tah zpět“ v sólu není (okno ~0,8 s, tlačítko by jen blikalo); kolo 2+ bere náhodnou variantu z `offer`, začátek se střídá.
+- Testy lokálně: engine 30/0, dva-prohlížeče 46/0, desktop-iphone 159/0, tri-partie 42/0 (jednou 41/1: kontrast tlačítka v přechodu), solo 111/0, pocit 28/1 (iPhone přeběhnutí 1,15–1,24 s proti limitu 1,1 s, padá stejně i bez mých změn = zatížení stroje). Živě: solo 111/0, dva-prohlížeče 46/0 (napoprvé 45/1 na synchronizaci animace, napodruhé čisté).
+- Neověřeno: skutečný iPhone, kvalita bota proti člověku (zkoušen jen bot proti botovi a skriptovaný hráč).
+
 ## 2026-10-31 · Claude (převzetí: varianty kola, šance na návrat, postup v sérii)
 - Hotovo: 5 souměrných variant (Klasika, Dárek, Prohozená křídla, Bez kuřátek, Slepičí start), 1. kolo vždy Klasika, nabídka 2 variant ze seedu (místnost + kolo); poražený vybírá a zakládá odvetu; tituly Učeň / Strážce zásoby / Lví mistr u jména a v lístku, od 3 výher lakovaný okraj kotouče a hranatá pečeť.
 - Rozhodnuto: vítěz odvetu po výhře založit nemůže (dřív mohl a poraženému tak sebral volbu); hra se nezasekne, protože poražený stejně táhne první. Výběr až před prvním tahem jsem zkusil a zahodil: na iPhonu se pod deskou nevejde.
