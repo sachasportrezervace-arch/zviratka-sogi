@@ -1,11 +1,11 @@
 // Pocit ze hry: odezva dotyku uprostřed animace, stopa soupeřova tahu, počitadlo v zásobě, razítko mimo poslední tah,
 // zkrácené animace, žádné nekonečné animace a reduced motion. Běží nad falešnou sítí (route na mantledb.sh).
-// node tests/pocit.cjs [URL]   (výchozí http://127.0.0.1:8791/)
+// node tests/pocit.cjs [URL]   (výchozí http://127.0.0.1:8805/)
 const path = require("path");
 const PW = process.env.PW || path.join(process.env.APPDATA || "", "npm/node_modules/playwright");
 const { chromium, webkit, devices } = require(PW);
 const S = require("../engine.js");
-const URL = process.argv[2] || "http://127.0.0.1:8791/";
+const URL = process.argv[2] || "http://127.0.0.1:8805/";
 
 let pass = 0, fail = 0;
 function check(name, ok, extra = "") {

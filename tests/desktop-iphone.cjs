@@ -1,6 +1,6 @@
 // Desktop (Chromium 1280×800, Mark) proti iPhonu (WebKit, devices["iPhone 13"] na výšku, Radka): celá série partií,
 // k tomu měření rozvržení, fullscreen, „Přidat na plochu“, manifest, aplikace z plochy, tmavý režim a kontrast.
-// node tests/desktop-iphone.cjs [URL]   (výchozí http://127.0.0.1:8791/)
+// node tests/desktop-iphone.cjs [URL]   (výchozí http://127.0.0.1:8805/)
 const path = require("path");
 const fs = require("fs");
 const PW = process.env.PW || path.join(process.env.APPDATA || "", "npm/node_modules/playwright");
@@ -8,7 +8,7 @@ const { chromium, webkit, devices } = require(PW);
 const audit = require("./kontrast.cjs");
 const H = require("./pomocne.cjs");
 const SE = require("../engine.js");
-const URL = process.argv[2] || "http://127.0.0.1:8791/";
+const URL = process.argv[2] || "http://127.0.0.1:8805/";
 const SHOTS = process.env.SHOTS || path.join(__dirname, "shots");
 fs.mkdirSync(SHOTS, { recursive: true });
 

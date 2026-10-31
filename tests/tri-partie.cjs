@@ -1,7 +1,7 @@
 // Playtest tří partií za sebou ve dvou prohlížečích (Chromium desktop 1280×800 = Mark, WebKit iPhone 13 = Radka):
 // kola se liší (varianta ze seedu), poražený vybírá variantu, titul a kosmetika naběhnou, žádné chyby JavaScriptu.
 // Síť je falešná, ale sdílená mezi oběma prohlížeči (jeden store v tomhle procesu), takže běh je rychlý a nezávislý na mantledb.sh.
-// node tests/tri-partie.cjs [URL]   (výchozí http://127.0.0.1:8791/)   screenshoty: tests/shots/tri-partie/ (proměnná SHOTS)
+// node tests/tri-partie.cjs [URL]   (výchozí http://127.0.0.1:8805/)   screenshoty: tests/shots/tri-partie/ (proměnná SHOTS)
 const path = require("path");
 const fs = require("fs");
 const PW = process.env.PW || path.join(process.env.APPDATA || "", "npm/node_modules/playwright");
@@ -9,7 +9,7 @@ const { chromium, webkit, devices } = require(PW);
 const H = require("./pomocne.cjs");
 const S = require("../engine.js");
 const audit = require("./kontrast.cjs");
-const URL = process.argv[2] || "http://127.0.0.1:8791/";
+const URL = process.argv[2] || "http://127.0.0.1:8805/";
 const SHOTS = process.env.SHOTS || path.join(__dirname, "shots", "tri-partie");
 fs.mkdirSync(SHOTS, { recursive: true });
 
@@ -67,8 +67,8 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
   // rozvržení: celá deska i obě zásoby bez posouvání, štítek kola vidět, žádné vodorovné posouvání
   const fits = p => p.evaluate(() => {
     const r = s => document.querySelector(s).getBoundingClientRect();
-    const small = [...document.querySelectorAll("#board .cell, .hp, .iconbtn, #pickSeg button")].filter(e => e.offsetWidth).filter(e => { const b = e.getBoundingClientRect(); return b.width < 43.5 || b.height < 43.5; }).length;
-    return { ok: scrollY === 0 && r("#seatTop").top >= 0 && r("#seatBot").bottom <= innerHeight && r("#status").bottom <= innerHeight && document.documentElement.scrollWidth <= innerWidth, small, bot: Math.round(r("#seatBot").bottom), st: Math.round(r("#status").bottom), ih: innerHeight };
+    const small = [...document.querySelectorAll("#board .cell, .hp, .iconbtn, #pickSeg button, #pick2Seg button")].filter(e => e.offsetWidth).filter(e => { const b = e.getBoundingClientRect(); return b.width < 43.5 || b.height < 43.5; }).length;
+    return { ok: scrollY === 0 && r("#seatTop").top >= 0 && r("#seatBot").bottom <= innerHeight && r("#status").bottom <= innerHeight && document.documentElement.scrollWidth <= innerWidth, small, sy: Math.round(scrollY), bot: Math.round(r("#seatBot").bottom), st: Math.round(r("#status").bottom), ih: innerHeight };
   });
   const expectedBoard = async (p, vr, starter, mine) => {
     const exp = S.initial(starter, vr), me = mine;
@@ -78,13 +78,20 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
     return got.length === 12 && got.every(([i, l]) => l.includes(sq(i))) && handN === new Set(exp.h[me].map(c => c.t)).size;
   };
   const round = { vr: [], boards: [] };
+  // zvýraznění titulu trvá jen chvíli a každý prohlížeč ukáže konec jindy: zaznamená, jestli se třída fresh objevila
+  const watchFresh = p => p.evaluate(() => {
+    window.__fr = new Set();
+    const mo = new MutationObserver(ms => ms.forEach(m => { if (m.target.classList.contains("fresh")) window.__fr.add(m.target.id); }));
+    ["rkX", "rkO"].forEach(id => mo.observe(document.getElementById(id), { attributes: true, attributeFilter: ["class"] }));
+  });
+  const sawFresh = (p, id) => p.evaluate(id => !!window.__fr && window.__fr.has(id), id);
   async function start(n, vr, starter) {
     round.vr.push(vr);
     check(`kolo ${n}: štítek „Kolo ${n} · ${S.VARIANTS[vr].n}“ u obou`, (await text(A, "#kolo")) === `Kolo ${n} · ${S.VARIANTS[vr].n}` && (await text(B, "#kolo")) === `Kolo ${n} · ${S.VARIANTS[vr].n}`);
     check(`kolo ${n}: deska a zásoby odpovídají variantě ${S.VARIANTS[vr].n} (Mark i Radka)`, (await expectedBoard(A, vr, starter, "x")) && (await expectedBoard(B, vr, starter, "o")));
     check(`kolo ${n}: v pravidlech je jedna věta o variantě`, (await A.locator(".aside-play .vr-rule").innerText()).includes(S.VARIANTS[vr].d) && await B.locator("#rulesSheet .vr-rule").evaluate(e => e.textContent).then(t => t.includes(S.VARIANTS[vr].d)));
     const fa = await fits(A), fb = await fits(B);
-    check(`kolo ${n}: začátek se vejde bez posouvání, desktop i iPhone, cíle ≥ 44 px`, fa.ok && fb.ok && !fa.small && !fb.small, `desktop ${fa.bot}/${fa.ih}, iPhone seatBot ${fb.bot}, status ${fb.st}/${fb.ih}`);
+    check(`kolo ${n}: začátek se vejde bez posouvání, desktop i iPhone, cíle ≥ 44 px`, fa.ok && fb.ok && !fa.small && !fb.small, `desktop ${fa.bot}/${fa.ih} scroll ${fa.sy} malé ${fa.small}, iPhone seatBot ${fb.bot}, status ${fb.st}/${fb.ih} scroll ${fb.sy} malé ${fb.small}`);
     await shot(A, `kolo${n}-start-desktop-${vr}`); await shot(B, `kolo${n}-start-iphone-${vr}`);
   }
 
@@ -107,11 +114,12 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
   await start(1, "k", "x");
 
   // ---------- kolo 1: Mark vyhrává, titul Učeň ----------
+  await watchFresh(A); await watchFresh(B);
   await playLine(H.winLine("k", "x", "x"), A, B);
   await A.waitForSelector("#endBox:not([hidden])", { timeout: T });
   await A.waitForTimeout(500); await B.waitForTimeout(500);
   check("kolo 1: vítěz Mark má titul Učeň, poražená Radka žádný", (await text(A, "#rkX")).includes("Učeň") && await A.locator("#rkO").isHidden() && await B.locator("#rkO").isHidden() && (await text(B, "#rkX")).includes("Učeň"));
-  check("kolo 1: nově získaný titul se krátce zvýrazní (třída fresh)", await A.locator("#rkX.fresh").count() === 1 && await B.locator("#rkX.fresh").count() === 1);
+  check("kolo 1: nově získaný titul se krátce zvýrazní (třída fresh)", await sawFresh(A, "rkX") && await sawFresh(B, "rkX") && !(await sawFresh(A, "rkO")));
   await shot(A, "kolo1-konec-desktop-titul"); await shot(B, "kolo1-konec-iphone-titul");
   const bEnd = await B.evaluate(() => { const b = document.getElementById("endBox"); b.scrollIntoView({ block: "end" }); return null; });
   await B.waitForTimeout(2300); await A.waitForTimeout(1200);
@@ -149,15 +157,19 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
   const vr3 = offer3[0];
   check("kolo 3: varianta je první nabídnutá (poražená nic nepřepnula) a liší se od kola 2", (await H.vrOf(A)) === vr3 && (await H.vrOf(B)) === vr3 && vr3 !== vr2, `${vr2} → ${vr3}`);
   await start(3, vr3, "o");
+  await watchFresh(A); await watchFresh(B);
   await playLine(H.winLine(vr3, "o", "x"), B, A);
   await A.waitForSelector("#endBox:not([hidden])", { timeout: T });
   await A.waitForTimeout(700); await B.waitForTimeout(700);
-  check("kolo 3: třetí výhra = Strážce zásoby, zvýrazněný titul", (await text(A, "#rkX")).includes("Strážce zásoby") && await A.locator("#rkX.fresh").count() === 1 && await B.locator("#rkX.fresh").count() === 1);
+  check("kolo 3: třetí výhra = Strážce zásoby, zvýrazněný titul", (await text(A, "#rkX")).includes("Strážce zásoby") && await sawFresh(A, "rkX") && await sawFresh(B, "rkX"));
   check("kolo 3: kosmetika: Markův kotouč (obě zařízení) a čip má lakovaný okraj, Radčin ne", await A.locator("#seatBot .disc.lak").count() === 1 && await B.locator("#seatTop .disc.lak").count() === 1 && await A.locator("#seatTop .disc.lak").count() === 0 && await B.locator("#seatBot .disc.lak").count() === 0 && await A.locator("#rkX .disc.lak").count() === 1);
   check("kolo 3: razítko je hranaté (sq) u obou", await A.locator("#hanko.sq").count() === 1 && await B.locator("#hanko.sq").count() === 1);
   const lakStyle = await A.locator("#seatBot .disc.lak").evaluate(e => { const s = getComputedStyle(e, "::after"); return { content: s.content, border: s.borderTopWidth, radius: s.borderTopLeftRadius }; });
   check("kolo 3: lakovaný okraj je tenký vnitřní kroužek (pseudoprvek, ≤ 2 px)", lakStyle.content !== "none" && parseFloat(lakStyle.border) <= 2, JSON.stringify(lakStyle));
   const aud = async (p, n) => { const f = await p.evaluate(`(${audit.toString()})()`); check(`kolo 3 konec: ${n}, kontrast textů ≥ 4,5:1 (velké 3:1)`, f.length === 0, f.slice(0, 2).join(" | ")); };
+  // kontrast až po dopadu razítka (WebKit iPhonu dostane soupeřův tah později a animace ještě běží)
+  const settled = p => p.waitForFunction(() => !document.getAnimations().some(a => a.playState === "running"), null, { timeout: T });
+  await settled(A); await settled(B);
   await aud(A, "desktop, světlý"); await aud(B, "iPhone, světlý");
   await shot(A, "kolo3-konec-desktop-titul-lak"); await B.evaluate(() => document.getElementById("endBox").scrollIntoView({ block: "end" })); await shot(B, "kolo3-konec-iphone-titul-lak");
   await B.evaluate(() => scrollTo(0, 0)); await B.waitForTimeout(150); await shot(B, "kolo3-konec-iphone-razitko-hranate");
@@ -165,17 +177,25 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
   check("kolo 3: zvýraznění zhasne a kosmetika zůstane", await A.locator("#rkX.fresh").count() === 0 && await A.locator("#seatBot .disc.lak").count() === 1);
   // tmavý režim téhož konce
   for (const p of [A, B]) await p.emulateMedia({ colorScheme: "dark" });
-  await A.waitForTimeout(300);
+  // čip titulu a tlačítka mají přechod pozadí (až .5 s): kontrast měřit až po něm
+  await A.waitForTimeout(900); await settled(A); await settled(B);
   await aud(A, "desktop, tmavý"); await aud(B, "iPhone, tmavý");
   await shot(A, "kolo3-konec-desktop-tmavy"); await B.evaluate(() => document.getElementById("endBox").scrollIntoView({ block: "end" })); await shot(B, "kolo3-konec-iphone-tmavy");
   for (const p of [A, B]) await p.emulateMedia({ colorScheme: "light" });
 
-  // ---------- kolo 4: odvetu spouští vítěz, takže platí první nabídnutá varianta ----------
+  // ---------- kolo 4: vítěz odvetu založit nemůže (čeká), poražená vybere druhou variantu a začne ----------
   const offer4 = S.offer(room, 4, vr3);
-  await A.click("#endPrimary");
+  check("kolo 4: vítěz nemá tlačítko odvety, vidí, že odvetu zakládá Radka a z čeho vybírá",
+    await A.locator("#endPrimary").isHidden() && (await text(A, "#pickNote")).includes("Odvetu zakládá Radka") && (await text(A, "#pickNote")).includes(S.VARIANTS[offer4[1]].n));
+  await A.evaluate(() => document.getElementById("endPrimary").click());   // ani skryté tlačítko odvetu nezaloží
+  await A.waitForTimeout(800);
+  check("kolo 4: vítězovo (skryté) tlačítko nic nezapíše", JSON.parse(store[`https://mantledb.sh/v2/zviratka-${room}/hra`]).g.n === 3);
+  await shot(A, "kolo4-vitez-ceka-desktop");
+  const rm4 = await H.rematchPick(B);
   await myTurn(B);
-  check("kolo 4: odvetu spustil vítěz, platí první nabídnutá varianta", (await H.vrOf(A)) === offer4[0] && (await H.vrOf(B)) === offer4[0] && offer4[0] !== vr3, `${vr3} → ${offer4[0]}`);
-  await start(4, offer4[0], "o");
+  await A.waitForSelector("#endBox", { state: "hidden", timeout: T });
+  check("kolo 4: poražená vybrala druhou nabídnutou variantu, propsalo se oběma", rm4.pick === offer4[1] && (await H.vrOf(A)) === offer4[1] && (await H.vrOf(B)) === offer4[1], `${vr3} → ${offer4[1]}`);
+  await start(4, offer4[1], "o");
   check("kola 1–4: každé kolo má jinou variantu než předchozí", round.vr.every((v, i) => i === 0 || v !== round.vr[i - 1]), round.vr.join(" → "));
   check("kola 1–3: aspoň dvě různé rozestavení desky", new Set(round.vr.slice(0, 3)).size >= 2);
   check("žádné chyby JavaScriptu", errs.length === 0, errs.join(" | "));

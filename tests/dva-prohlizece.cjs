@@ -1,10 +1,10 @@
 // Celá partie ve 2 nezávislých prohlížečích (Chromium jako Android, WebKit jako iPhone) + přihlížející.
-// node tests/dva-prohlizece.cjs [URL]   (výchozí http://127.0.0.1:8791/)
+// node tests/dva-prohlizece.cjs [URL]   (výchozí http://127.0.0.1:8805/)
 const path = require("path");
 const PW = process.env.PW || path.join(process.env.APPDATA || "", "npm/node_modules/playwright");
 const { chromium, webkit, devices } = require(PW);
 const H = require("./pomocne.cjs");
-const URL = process.argv[2] || "http://127.0.0.1:8791/";
+const URL = process.argv[2] || "http://127.0.0.1:8805/";
 const SHOTS = process.env.SHOTS || path.join(__dirname, "shots");
 require("fs").mkdirSync(SHOTS, { recursive: true });
 
@@ -128,7 +128,7 @@ const T = 15000;
   // varianta kola: první partie je klasika, poražená (Radka) vybírá z dvou nabídnutých, vítěz (Mark) jen vidí první
   const room = H.roomOf(link), S = require("../engine.js");
   const offer2 = S.offer(room, 2, "k");
-  check("vítěz u odvety nemá výběr, jen vidí první nabídnutou variantu a že volí poražený", await A.locator("#pickSeg").isHidden() && (await text(A, "#pickNote")).includes(S.VARIANTS[offer2[0]].n) && (await text(A, "#pickNote")).includes("volí poražený"));
+  check("vítěz u odvety nemá výběr ani tlačítko odvety, jen vidí obě nabízené varianty a že odvetu zakládá poražená", await A.locator("#pickSeg").isHidden() && await A.locator("#endPrimary").isHidden() && (await text(A, "#pickNote")).includes(S.VARIANTS[offer2[0]].n) && (await text(A, "#pickNote")).includes(S.VARIANTS[offer2[1]].n) && (await text(A, "#pickNote")).includes("Odvetu zakládá Radka"));
   const rm = await H.rematchPick(B);
   check("poražená vidí dvě nabídnuté varianty ze seedu (id místnosti + kolo), bez klasiky, první je předvybraná", JSON.stringify(rm.offer) === JSON.stringify(offer2) && !rm.offer.includes("k") && rm.before === offer2[0], rm.offer.join());
   check("poražená přepnula na druhou variantu a popis se změnil", rm.pressed === "true" && rm.note.includes(S.VARIANTS[rm.pick].n) && rm.note.includes(S.VARIANTS[rm.pick].d), rm.note);
@@ -186,7 +186,7 @@ const T = 15000;
   check("remíza opakováním pozice", (await text(A, "#endL1")).includes("Remíza") && (await text(B, "#endL1")).includes("Remíza"));
   check("série po remíze zůstává 1 : 1", (await text(B, "#tSer")).includes("Mark 1 : 1 Radka"));
   const offer4 = S.offer(room, 4, vr3);
-  check("po remíze nikdo nevybírá, ukáže se první nabídnutá varianta", await A.locator("#pickSeg").isHidden() && await B.locator("#pickSeg").isHidden() && (await text(A, "#pickNote")).includes(S.VARIANTS[offer4[0]].n) && !(await text(A, "#pickNote")).includes("volí poražený"));
+  check("po remíze nikdo nevybírá, ukáže se první nabídnutá varianta", await A.locator("#pickSeg").isHidden() && await B.locator("#pickSeg").isHidden() && (await text(A, "#pickNote")).includes(S.VARIANTS[offer4[0]].n) && !(await text(A, "#pickNote")).includes("Odvetu zakládá") && !(await A.locator("#endPrimary").isHidden()) && !(await B.locator("#endPrimary").isHidden()));
   check("kolo 3 skončilo remízou a číslo kola se přesto zvýšilo (Kolo 3 · …)", (await text(A, "#endMeta")).startsWith(`Kolo 3 · ${S.VARIANTS[vr3].n}`), await text(A, "#endMeta"));
 
   // 7) přihlížející (třetí prohlížeč, omezený pohyb)

@@ -1,10 +1,10 @@
 // Finální rendery pro kritiku designu do tests/shots/review/ (falešná síť, žádný zápis do mantledb.sh).
-// node tests/render-review.cjs [URL]   (výchozí http://127.0.0.1:8791/)
+// node tests/render-review.cjs [URL]   (výchozí http://127.0.0.1:8805/)
 const path = require("path");
 const fs = require("fs");
 const PW = process.env.PW || path.join(process.env.APPDATA || "", "npm/node_modules/playwright");
 const { chromium, webkit, devices } = require(PW);
-const URL = process.argv[2] || "http://127.0.0.1:8791/";
+const URL = process.argv[2] || "http://127.0.0.1:8805/";
 const OUT = process.env.OUT || path.join(__dirname, "shots", "review");
 fs.mkdirSync(OUT, { recursive: true });
 const key = id => `https://mantledb.sh/v2/zviratka-${id}/hra`;

@@ -18,6 +18,8 @@ module.exports = function auditInPage() {
     return null;
   };
   const bgOf = el => {
+    // vlastní neprůhledné pozadí (např. počitadlo v zásobě) má přednost před typickou barvou okolí
+    const own = parse(getComputedStyle(el).backgroundColor); if (own && own[3] === 1) return own;
     const sp = special(el); if (sp) return sp;
     const layers = [];
     for (let e = el; e; e = e.parentElement) {

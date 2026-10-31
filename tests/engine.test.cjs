@@ -70,19 +70,25 @@ t("vzdání", () => {
 
 // ---------- varianty začátku kola ----------
 const flip = c => 11 - c;
-// vynutí hráč na tahu výhru do `d` půltahů (lichý počet)? Prohledává do hloubky, opakování pozice neřeší.
+// vynutí hráč na tahu výhru do `d` půltahů (lichý počet)? Prohledává do hloubky s pamětí pozic, opakování pozice neřeší.
+// Mimo sadu ověřeno i do 11 půltahů (6 tahů začínajícího): žádná varianta nemá vynucenou výhru.
 const imm = r => r.info.lionCaught || r.info.lionHome;
+const memo = new Map();
 function canWin(s, d) {
+  const k = S.key(s) + "#" + d;
+  if (memo.has(k)) return memo.get(k);
+  let res = false;
   for (const m of S.moves(s)) {
     const r = S.apply(s, m);
-    if (imm(r)) return true;
+    if (imm(r)) { res = true; break; }
     if (d >= 3) {
       const opp = S.moves(r.s);
-      if (!opp.length) return true;
-      if (opp.every(m2 => { const r2 = S.apply(r.s, m2); return !imm(r2) && canWin(r2.s, d - 2); })) return true;
+      if (!opp.length) { res = true; break; }
+      if (opp.every(m2 => { const r2 = S.apply(r.s, m2); return !imm(r2) && canWin(r2.s, d - 2); })) { res = true; break; }
     }
   }
-  return false;
+  memo.set(k, res);
+  return res;
 }
 const H = require("./pomocne.cjs");
 t("5 variant, klasika je výchozí (chybějící i neznámé vr)", () => {
@@ -116,16 +122,16 @@ for (const vr of S.VR_KEYS) {
       assert.equal(S.attacked(s, lo, "x"), false);
     }
   });
-  t(`varianta ${vr}: legální, hratelná, nikdo nevyhraje v jednom tahu ani nevynutí výhru do 7 půltahů (první hráč má bezpečný tah)`, () => {
+  t(`varianta ${vr}: legální, hratelná, nikdo nevyhraje v jednom tahu ani nevynutí výhru do 9 půltahů (první hráč má bezpečný tah)`, () => {
     for (const st of ["x", "o"]) {
       const s = S.initial(st, vr), ms = S.moves(s);
       assert.ok(ms.length >= 4, "první hráč má co hrát");
       assert.ok(ms.every(m => S.legal(s, m)));
       assert.ok(ms.every(m => !imm(S.apply(s, m))), "žádný tah na vítězství hned");
       assert.ok(S.moves(s, S.other(st)).length >= 4, "druhý hráč má co hrát");
-      assert.equal(canWin(s, 7), false, "první hráč nevynutí výhru do 7 půltahů");
-      // druhý hráč nevynutí výhru do 7 půltahů po každém prvním tahu (aspoň jeden první tah je bezpečný)
-      assert.ok(ms.some(m => !canWin(S.apply(s, m).s, 7)), "první hráč má bezpečný tah");
+      assert.equal(canWin(s, 9), false, "první hráč nevynutí výhru do 9 půltahů");
+      // druhý hráč nevynutí výhru do 9 půltahů po každém prvním tahu (aspoň jeden první tah je bezpečný)
+      assert.ok(ms.some(m => !canWin(S.apply(s, m).s, 9)), "první hráč má bezpečný tah");
     }
   });
   t(`varianta ${vr}: play čte g.vr, tahy se přehrají stejně a opakování pozice dál platí`, () => {

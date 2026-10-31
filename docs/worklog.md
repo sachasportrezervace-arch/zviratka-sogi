@@ -2,6 +2,13 @@
 
 PŘEVZATO 31. 10. – dodělává session na účtu P, jiná session sem nepíše.
 
+## 2026-10-31 · Claude (převzetí: varianty kola, šance na návrat, postup v sérii)
+- Hotovo: 5 souměrných variant (Klasika, Dárek, Prohozená křídla, Bez kuřátek, Slepičí start), 1. kolo vždy Klasika, nabídka 2 variant ze seedu (místnost + kolo); poražený vybírá a zakládá odvetu; tituly Učeň / Strážce zásoby / Lví mistr u jména a v lístku, od 3 výher lakovaný okraj kotouče a hranatá pečeť.
+- Rozhodnuto: vítěz odvetu po výhře založit nemůže (dřív mohl a poraženému tak sebral volbu); hra se nezasekne, protože poražený stejně táhne první. Výběr až před prvním tahem jsem zkusil a zahodil: na iPhonu se pod deskou nevejde.
+- Opraveno: po odvetě zůstávala stránka na mobilu posunutá dolů (nové kolo teď posune nahoru); nadpis „Začínáš.“ se vejde na řádek.
+- Férovost: test zpřísněn na 9 půltahů s pamětí pozic, jednorázově ověřeno do 11 půltahů: žádná varianta nemá vynucenou výhru, začínající má vždy bezpečný tah.
+- Testy lokálně (port 8805): engine 29/0, tri-partie 42/0, dva-prohlížeče 46/0, desktop-iphone 159/0, pocit 29/0 (vše exit 0).
+
 ## 2026-10-31 · Claude (shrnutí dne: pocit ze hry a dvě kola design-eye, nasazeno)
 - Pocit ze hry: přeběhnutí zkráceno na ~700 ms (soupeř vidí ~940 ms), oblouková dráha s otočením a změnou barvy, jeden kroužek při úderu, dopad do zásoby s počitadlem, stejná zvířátka v zásobě jako jeden kámen s číslem, stopa soupeřova tahu; odstraněny dekorace (gradienty pozadí, „dýchání“, houpání, lístky, paprsky).
 - Design-eye kolo 1 „NENÍ PROFI, ale blízko“ (a90f9c9): poslední tah šedě (červená jen pro sebrání a výhru), výběr a cílové tečky v barvě mé strany, razítko menší a uvnitř desky, nadpisy s word-spacing, jednotné zaoblení 10/14/22, plný přepínač „Kdo začíná“, nová žirafa.
