@@ -7,7 +7,11 @@ PŘEVZATO 31. 10. – dodělává session na účtu P, jiná session sem nepíš
 - Rozhodnuto: vítěz odvetu po výhře založit nemůže (dřív mohl a poraženému tak sebral volbu); hra se nezasekne, protože poražený stejně táhne první. Výběr až před prvním tahem jsem zkusil a zahodil: na iPhonu se pod deskou nevejde.
 - Opraveno: po odvetě zůstávala stránka na mobilu posunutá dolů (nové kolo teď posune nahoru); nadpis „Začínáš.“ se vejde na řádek.
 - Férovost: test zpřísněn na 9 půltahů s pamětí pozic, jednorázově ověřeno do 11 půltahů: žádná varianta nemá vynucenou výhru, začínající má vždy bezpečný tah.
-- Testy lokálně (port 8805): engine 29/0, tri-partie 42/0, dva-prohlížeče 46/0, desktop-iphone 159/0, pocit 29/0 (vše exit 0).
+- Testy lokálně (port 8805): engine 29/0, tri-partie 42/0 (4× za sebou), dva-prohlížeče 46/0, desktop-iphone 159/0, pocit 29/0 (vše exit 0).
+- Design-eye: kolo 1 „PROFI, ale těsně“ (pečeť vypadala jako kámen a přečnívala desku, výběr varianty splýval s tlačítkem, drobnosti v textu a velikosti), kolo 2 **„PROFI“**; dvě drobnosti z kola 2 také zapracované.
+- Testy: audit kontrastu dává přednost vlastnímu pozadí prvku (počitadlo v zásobě byl falešný poplach), kontrast se měří až po doběhnutí animací a přechodů.
+- Nasazeno: commit 1f6e3fa, Pages build exit 0. Živě (https://sachasportrezervace-arch.github.io/zviratka-sogi/): tri-partie 42/0, dva-prohlížeče 46/0, desktop-iphone 159/0, pocit 29/0, vše exit 0.
+- Neověřeno: skutečný iPhone (jen WebKit emulace), animace zvýraznění titulu jen testem (třída fresh), ne okem.
 
 ## 2026-10-31 · Claude (shrnutí dne: pocit ze hry a dvě kola design-eye, nasazeno)
 - Pocit ze hry: přeběhnutí zkráceno na ~700 ms (soupeř vidí ~940 ms), oblouková dráha s otočením a změnou barvy, jeden kroužek při úderu, dopad do zásoby s počitadlem, stejná zvířátka v zásobě jako jeden kámen s číslem, stopa soupeřova tahu; odstraněny dekorace (gradienty pozadí, „dýchání“, houpání, lístky, paprsky).
