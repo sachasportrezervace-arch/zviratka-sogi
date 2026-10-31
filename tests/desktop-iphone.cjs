@@ -6,6 +6,8 @@ const fs = require("fs");
 const PW = process.env.PW || path.join(process.env.APPDATA || "", "npm/node_modules/playwright");
 const { chromium, webkit, devices } = require(PW);
 const audit = require("./kontrast.cjs");
+const H = require("./pomocne.cjs");
+const SE = require("../engine.js");
 const URL = process.argv[2] || "http://127.0.0.1:8791/";
 const SHOTS = process.env.SHOTS || path.join(__dirname, "shots");
 fs.mkdirSync(SHOTS, { recursive: true });
@@ -253,19 +255,25 @@ async function mockPage(ctx, init) {
     check("konec partie: desktop má vše na místě a tlačítko odvety vidět, na iPhonu je po razítku vidět výsledek a tlačítko odvety", a.bot.bottom <= a.ih && a.scrollY === 0 && ba.bottom <= ba.ih && bb.top >= 0 && bb.bottom <= bb.ih && a.sw <= a.iw && b.sw <= b.iw, `desktop odveta ${ba.top}–${ba.bottom}/${ba.ih}, iPhone odveta ${bb.top}–${bb.bottom}/${bb.ih}, scrollY ${b.scrollY}`);
   }
 
-  // 5) ODVETA: Radka (poražená) chce odvetu, začíná ona
+  // 5) ODVETA: Radka (poražená) vybere variantu kola a začíná ona
   check("tlačítko odvety u poražené", (await text(B, "#endPrimary")).includes("Chci odvetu"));
-  await B.click("#endPrimary");
+  const room = link.split("#r.")[1], offer2 = SE.offer(room, 2, "k");
+  check("odveta: poražená na iPhonu vidí dvě nabídnuté varianty (segmenty ≥ 44 px), vítěz na desktopu jen první", await B.locator("#pickSeg button").count() === 2 && await A.locator("#pickSeg").isHidden() && (await text(A, "#pickNote")).includes(SE.VARIANTS[offer2[0]].n) &&
+    (await B.locator("#pickSeg button").evaluateAll(els => els.every(e => e.getBoundingClientRect().height >= 44 - .5 && e.getBoundingClientRect().width >= 44))), offer2.join());
+  const rm2 = await H.rematchPick(B);
+  const vr2 = rm2.pick;
   await myTurn(B);
   await A.waitForSelector("#endBox", { state: "hidden", timeout: T });
   check("odveta: nová deska u obou, začíná Radka, skóre 1 : 0", (await text(A, "#score")).includes("Mark 1 : 0 Radka") && (await text(A, "#status")).includes("Radka přemýšlí"));
+  check("odveta: Kolo 2 a vybraná varianta ze seedu na desktopu i iPhonu", JSON.stringify(rm2.offer) === JSON.stringify(offer2) && (await H.vrOf(A)) === vr2 && (await H.vrOf(B)) === vr2 && (await text(A, "#kolo")) === `Kolo 2 · ${SE.VARIANTS[vr2].n}`, `${rm2.offer.join()} → ${vr2}`);
+  await B.waitForTimeout(500);
+  layoutChecks(`začátek kola 2 (${SE.VARIANTS[vr2].n}), iPhone 13`, await measure(B));
+  layoutChecks(`začátek kola 2 (${SE.VARIANTS[vr2].n}), desktop 1280×800`, await measure(A), { desktop: true, minBoardW: mB0.stage.w });
+  await shot(A, "d-07a-kolo2-varianta"); await shot(B, "m-07a-kolo2-varianta");
 
-  // 6) PARTIE 2: lev doběhne do cíle
-  await mv(B, A, "m15");
-  await mv(A, B, "ma6");
-  await mv(B, A, "m58");
-  await mv(A, B, "m63");
-  await mv(B, A, "m8b", { end: true });
+  // 6) PARTIE 2: lev doběhne do cíle (řadu tahů pro vybranou variantu hledá engine; začíná Radka a vyhrává)
+  const line2 = H.winLine(vr2, "o", "o", ["cil"]);
+  for (const [k, m] of line2.entries()) await (k % 2 === 0 ? mv(B, A, m, { end: k === line2.length - 1 }) : mv(A, B, m));
   await B.waitForSelector("#endBox:not([hidden])", { timeout: T });
   await B.waitForTimeout(1800);
   await shot(B, "m-07-vyhra-cil");
@@ -273,21 +281,26 @@ async function mockPage(ctx, init) {
   check("Mark vidí prohru: soupeřův lev v cíli", (await text(A, "#endL1")).includes("Soupeřův lev doběhl do cíle"));
   check("razítko LEV V CÍLI", (await text(A, "#hanko")).replace(/\s+/g, " ").includes("LEV V CÍLI"));
   check("skóre série 1 : 1", (await text(A, "#tSer")).includes("Mark 1 : 1 Radka"));
+  check("titul po první výhře: oba mají Učeň, bez lakovaného okraje a s kulatým razítkem", (await text(A, "#rkX")).includes("Učeň") && (await text(A, "#rkO")).includes("Učeň") && await A.locator(".disc.lak").count() === 0 && !(await A.locator("#hanko").evaluate(e => e.classList.contains("sq"))));
 
-  // 7) ODVETA od Marka + tah zpět + remíza opakováním
-  await A.click("#endPrimary");
+  // 7) ODVETA od Marka (poražený Mark vybírá) + tah zpět + remíza opakováním
+  const offer3 = SE.offer(room, 3, vr2);
+  const rm3 = await H.rematchPick(A);
+  const vr3 = rm3.pick;
+  check("odveta od Marka: nabídka ze seedu bez právě hrané varianty, kolo 3 jiné než kolo 2", JSON.stringify(rm3.offer) === JSON.stringify(offer3) && !rm3.offer.includes(vr2) && vr3 !== vr2, `${vr2} → ${vr3}`);
   await myTurn(A);
   await B.waitForSelector("#endBox", { state: "hidden", timeout: T });
-  await A.locator('#board .cell[data-i="11"]').click();
-  await A.locator('#board .cell[data-i="8"]').click();
+  const q = H.quietMove(vr3, "x"), qf = parseInt(q[1], 12), qt = parseInt(q[2], 12);
+  await A.locator(`#board .cell[data-i="${qf}"]`).click();
+  await A.locator(`#board .cell[data-i="${qt}"]`).click();
   await myTurn(B);
   await A.waitForSelector("#undoBtn:not([hidden])", { timeout: T });
   await A.click("#undoBtn");
   await myTurn(A);
   await B.waitForFunction(() => !document.title.startsWith("Jsi na tahu"), null, { timeout: T });
   await B.waitForTimeout(400);
-  check("tah zpět: žirafa je zpět na C1 i u Radky", (await label(B, 11)).includes("žirafa") && !(await label(B, 8)).includes("žirafa"));
-  const loop = ["mb8", "m03", "m8b", "m30"];
+  check("tah zpět: figurka je zpět na původním poli i u Radky", !(await label(B, qf)).includes("prázdné") && (await label(B, qt)).includes("prázdné"), q);
+  const loop = H.loopLine(vr3, "x");
   for (const [k, m] of [...loop, ...loop].entries()) {
     const last = k === 7;
     await (k % 2 ? mv(B, A, m, { end: last }) : mv(A, B, m, { end: last }));
@@ -295,6 +308,7 @@ async function mockPage(ctx, init) {
   await A.waitForSelector("#endBox:not([hidden])", { timeout: T });
   check("remíza opakováním pozice", (await text(A, "#endL1")).includes("Remíza") && (await text(B, "#endL1")).includes("Remíza"));
   check("série po remíze zůstává 1 : 1", (await text(B, "#tSer")).includes("Mark 1 : 1 Radka"));
+  check("po remíze se u obou ukáže první nabídnutá varianta bez výběru", await A.locator("#pickSeg").isHidden() && await B.locator("#pickSeg").isHidden() && (await text(B, "#pickNote")).includes(SE.VARIANTS[SE.offer(room, 4, vr3)[0]].n));
 
   // 8) aplikace z plochy: tlačítko skryté, prázdné úložiště → vložení odkazu na hru
   {

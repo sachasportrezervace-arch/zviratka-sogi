@@ -67,4 +67,113 @@ t("neplatný tah partii utne", () => {
 t("vzdání", () => {
   assert.deepEqual(g("x", ["m74"], "o").result, { w: "x", why: "vzdal" });
 });
+
+// ---------- varianty začátku kola ----------
+const flip = c => 11 - c;
+// vynutí hráč na tahu výhru do `d` půltahů (lichý počet)? Prohledává do hloubky, opakování pozice neřeší.
+const imm = r => r.info.lionCaught || r.info.lionHome;
+function canWin(s, d) {
+  for (const m of S.moves(s)) {
+    const r = S.apply(s, m);
+    if (imm(r)) return true;
+    if (d >= 3) {
+      const opp = S.moves(r.s);
+      if (!opp.length) return true;
+      if (opp.every(m2 => { const r2 = S.apply(r.s, m2); return !imm(r2) && canWin(r2.s, d - 2); })) return true;
+    }
+  }
+  return false;
+}
+const H = require("./pomocne.cjs");
+t("5 variant, klasika je výchozí (chybějící i neznámé vr)", () => {
+  assert.deepEqual(S.VR_KEYS, ["k", "d", "p", "b", "s"]);
+  assert.equal(S.vrOf(undefined), "k"); assert.equal(S.vrOf("zzz"), "k");
+  assert.equal(S.key(S.initial("x", "k")), S.key(S.initial("x")));
+  assert.equal(S.key(S.initial("x", "zzz")), "gle-c--C-ELG|||x");
+  // starý dokument bez vr se přehraje jako klasika
+  assert.deepEqual(S.play({ s: "x", m: ["m74", "m24", "dC5", "m03", "m52", "m36", "m21"] }).result, { w: "x", why: "lev" });
+  assert.deepEqual(S.play({ s: "x", vr: "k", m: ["m74", "m24", "dC5", "m03", "m52", "m36", "m21"] }).result, { w: "x", why: "lev" });
+});
+for (const vr of S.VR_KEYS) {
+  t(`varianta ${vr} (${S.VARIANTS[vr].n}): souměrná podle středu, stejné zásoby, jedinečná id`, () => {
+    for (const st of ["x", "o"]) {
+      const s = S.initial(st, vr);
+      assert.equal(s.turn, st);
+      for (let i = 0; i < 12; i++) {
+        const a = s.b[i], b = s.b[flip(i)];
+        assert.equal(!!a, !!b, "obsazenost pole " + i);
+        if (a) { assert.equal(a.t, b.t); assert.notEqual(a.p, b.p); }
+      }
+      assert.deepEqual(s.h.x.map(c => c.t), s.h.o.map(c => c.t));
+      const all = [...s.b.filter(Boolean), ...s.h.x, ...s.h.o], ids = all.map(c => c.id);
+      assert.equal(new Set(ids).size, ids.length);
+      assert.equal(all.filter(c => c.t === "L").length, 2);
+      // lev každého stojí ve své domácí řadě a nikdo není hned v šachu ani na cíli
+      const lx = s.b.findIndex(c => c && c.t === "L" && c.p === "x"), lo = s.b.findIndex(c => c && c.t === "L" && c.p === "o");
+      assert.equal(S.rc(lx)[0], 3);
+      assert.equal(S.rc(lo)[0], 0);
+      assert.equal(S.attacked(s, lx, "o"), false);
+      assert.equal(S.attacked(s, lo, "x"), false);
+    }
+  });
+  t(`varianta ${vr}: legální, hratelná, nikdo nevyhraje v jednom tahu ani nevynutí výhru do 7 půltahů (první hráč má bezpečný tah)`, () => {
+    for (const st of ["x", "o"]) {
+      const s = S.initial(st, vr), ms = S.moves(s);
+      assert.ok(ms.length >= 4, "první hráč má co hrát");
+      assert.ok(ms.every(m => S.legal(s, m)));
+      assert.ok(ms.every(m => !imm(S.apply(s, m))), "žádný tah na vítězství hned");
+      assert.ok(S.moves(s, S.other(st)).length >= 4, "druhý hráč má co hrát");
+      assert.equal(canWin(s, 7), false, "první hráč nevynutí výhru do 7 půltahů");
+      // druhý hráč nevynutí výhru do 7 půltahů po každém prvním tahu (aspoň jeden první tah je bezpečný)
+      assert.ok(ms.some(m => !canWin(S.apply(s, m).s, 7)), "první hráč má bezpečný tah");
+    }
+  });
+  t(`varianta ${vr}: play čte g.vr, tahy se přehrají stejně a opakování pozice dál platí`, () => {
+    const m = H.winLine(vr, "x", "x");
+    const g = S.play({ s: "x", vr, m });
+    assert.ok(g.ok); assert.equal(g.result.w, "x"); assert.ok(["lev", "cil"].includes(g.result.why));
+    assert.equal(S.play({ s: "o", vr, m: H.winLine(vr, "o", "o") }).result.w, "o");
+    const loop = H.loopLine(vr, "x");
+    assert.equal(S.play({ s: "x", vr, m: loop }).result, null);
+    assert.deepEqual(S.play({ s: "x", vr, m: [...loop, ...loop] }).result, { w: null, why: "opak" });
+    assert.equal(S.play({ s: "x", vr, m: ["m77"] }).ok, false);
+  });
+}
+t("Dárek: oba mají kuřátko v zásobě a můžou ho hned položit; Bez kuřátek: deska bez kuřátek; Prohozená křídla; Slepičí start", () => {
+  const d = S.initial("x", "d");
+  assert.deepEqual(d.h.x.map(c => c.t), ["C"]); assert.deepEqual(d.h.o.map(c => c.t), ["C"]);
+  assert.ok(S.moves(d).some(m => m.k === "d" && m.t === "C"));
+  const b = S.initial("x", "b");
+  assert.equal(b.b.filter(c => c && (c.t === "C" || c.t === "H")).length, 0);
+  assert.deepEqual(b.h.x.map(c => c.t), ["C"]);
+  const p = S.initial("x", "p");
+  assert.equal(p.b[9].t, "G"); assert.equal(p.b[11].t, "E"); assert.equal(p.b[0].t, "E"); assert.equal(p.b[2].t, "G");
+  const s = S.initial("x", "s");
+  assert.equal(s.b[7].t, "H"); assert.equal(s.b[4].t, "H");
+  // sebraná slepice se vrací jako kuřátko
+  const r = S.apply(s, { k: "m", f: 7, to: 4 });
+  assert.deepEqual(r.s.h.x.map(c => c.t), ["C"]);
+});
+t("nabídka variant: deterministická ze seedu, dvě různé, bez právě hrané, všechny se časem objeví", () => {
+  const seen = new Set();
+  for (let n = 2; n < 40; n++) {
+    for (const prev of S.VR_KEYS) {
+      const a = S.offer("abc123xyz789", n, prev), b = S.offer("abc123xyz789", n, prev);
+      assert.deepEqual(a, b);
+      assert.equal(a.length, 2); assert.notEqual(a[0], a[1]);
+      assert.ok(a.every(v => S.VARIANTS[v] && v !== prev));
+      a.forEach(v => seen.add(v));
+    }
+  }
+  assert.equal(seen.size, 5);
+  // různé místnosti a různá kola dávají různé nabídky
+  const sig = new Set(); for (let i = 0; i < 30; i++) sig.add(S.offer("room" + i, 2, "k").join());
+  assert.ok(sig.size >= 4, "nabídky se liší: " + [...sig].join(" "));
+  const rounds = new Set(); for (let n = 2; n < 14; n++) rounds.add(S.offer("abc123xyz789", n, "k").join());
+  assert.ok(rounds.size >= 3);
+});
+t("tituly: 0 nic, 1 Učeň, 3 Strážce zásoby, 5 Lví mistr (kosmetika od úrovně 2)", () => {
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 9].map(S.rank), [0, 1, 1, 2, 2, 3, 3]);
+  assert.deepEqual(S.RANKS, ["", "Učeň", "Strážce zásoby", "Lví mistr"]);
+});
 console.log(`\n${n} testů prošlo`);

@@ -1,5 +1,7 @@
 # Deník – Zvířátkové šógi
 
+PŘEVZATO 31. 10. – dodělává session na účtu P, jiná session sem nepíše.
+
 ## 2026-10-31 · Claude (shrnutí dne: pocit ze hry a dvě kola design-eye, nasazeno)
 - Pocit ze hry: přeběhnutí zkráceno na ~700 ms (soupeř vidí ~940 ms), oblouková dráha s otočením a změnou barvy, jeden kroužek při úderu, dopad do zásoby s počitadlem, stejná zvířátka v zásobě jako jeden kámen s číslem, stopa soupeřova tahu; odstraněny dekorace (gradienty pozadí, „dýchání“, houpání, lístky, paprsky).
 - Design-eye kolo 1 „NENÍ PROFI, ale blízko“ (a90f9c9): poslední tah šedě (červená jen pro sebrání a výhru), výběr a cílové tečky v barvě mé strany, razítko menší a uvnitř desky, nadpisy s word-spacing, jednotné zaoblení 10/14/22, plný přepínač „Kdo začíná“, nová žirafa.

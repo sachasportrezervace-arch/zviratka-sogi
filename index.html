@@ -112,6 +112,8 @@
   .seat.on { background: transparent; box-shadow: inset 0 -3px 0 var(--pc); }
   .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .disc { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--pc); color: #fff; font: 400 15px/1 var(--display); flex: none; position: relative; }
+  /* kosmetická odměna od 3 výher v sérii: tenký „lakovaný“ vnitřní okraj kotouče (nezasahuje do kroužku „jsi na tahu“) */
+  .disc.lak::after { content: ""; position: absolute; inset: 2.5px; border-radius: 50%; border: 1.5px solid rgba(248,234,208,.92); box-shadow: 0 0 0 1px rgba(26,18,12,.3), inset 0 0 0 1px rgba(26,18,12,.24); pointer-events: none; }
   .seat.on .disc { box-shadow: 0 0 0 2px var(--washi), 0 0 0 4.5px var(--pt); }
   .who .nm { font-weight: 900; font-size: 15px; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .who .tag { display: block; font-weight: 700; font-size: 12px; color: var(--sumi-2); }
@@ -194,7 +196,8 @@
   .hp .tile i { display: none; }
 
   /* ---------- status ---------- */
-  .status { text-align: center; padding: 8px 4px 2px; min-height: 64px; }
+  .kolo { margin: 6px 0 -2px; text-align: center; font-size: 12px; line-height: 1.2; font-weight: 700; letter-spacing: .03em; color: var(--sumi-2); }
+  .status { text-align: center; padding: 6px 4px 2px; min-height: 60px; }
   .status h2 { margin: 0; font: 400 21px/1.15 var(--display); text-wrap: balance; }
   .status p { margin: 4px 0 0; font-size: 14px; color: var(--sumi-2); font-weight: 700; text-wrap: balance; }
   .acts { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
@@ -210,6 +213,7 @@
     font: 400 max(14px, 4.6cqi)/1.1 var(--display); word-spacing: 0; letter-spacing: .02em; transform: rotate(-11deg); pointer-events: none;
     box-shadow: inset 0 0 0 2px rgba(250,240,225,.92), inset 0 0 0 4px var(--hanko);
   }
+  .hanko.sq { border-radius: 15%; } /* od 3 výher vítěze: razítko hranaté (kakuin) místo kulatého */
   .hanko.slam { animation: slam .42s var(--ease) both; }
   .result { margin-top: 6px; padding: 14px 16px; border-radius: 22px; background: var(--washi-2); text-align: center; }
   .result h2 { margin: 0; font: 400 22px/1.12 var(--display); text-wrap: balance; }
@@ -221,6 +225,20 @@
   .ticket b { display: block; font-size: 16px; }
   .ticket .ser { margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--sumi-2); font-variant-numeric: tabular-nums; }
   .result .stack { margin-top: 10px; }
+  .pick { margin: 10px 0 0; text-align: left; }
+  .pick small { display: block; margin: 0 2px 6px; font-weight: 700; font-size: 12px; letter-spacing: .04em; color: var(--sumi-2); }
+  .pick .seg { background: var(--washi); }
+  .pick .seg button { font-size: 14px; line-height: 1.15; padding: 6px 8px; }
+  .pick .pnote { margin: 6px 2px 0; font-size: 13px; line-height: 1.35; font-weight: 700; color: var(--sumi-2); text-wrap: pretty; }
+  .pick .pnote b { color: var(--sumi); }
+  .ranks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .rk { display: inline-flex; align-items: center; gap: 7px; padding: 3px 12px 3px 3px; border-radius: 999px; background: var(--washi-2); font-size: 13px; font-weight: 700; color: var(--sumi-2); transition: box-shadow .5s, background .5s; }
+  .rk .disc { width: 24px; height: 24px; font-size: 11px; }
+  .rk.has-lak .disc::after { inset: 2px; border-width: 1px; }
+  .ticket .rk b { display: inline; font-size: 13px; font-weight: 900; color: var(--sumi); }
+  .rk .ttl::before { content: "· "; }
+  .own-x.rk { --pcs: var(--ai-soft); } .own-o.rk { --pcs: var(--kaki-soft); }
+  .rk.fresh { background: var(--pcs); box-shadow: 0 0 0 2px var(--pc); animation: titlein .5s var(--ease) both; }
   .result:not([hidden]) { animation: rise .3s var(--ease) both; }
   .result .btn.quiet { margin-top: 2px; width: 100%; }
 
@@ -300,6 +318,7 @@
     .app.playing #game { display: grid; grid-template-columns: max(var(--bw), 400px) minmax(0, 480px); column-gap: 56px; justify-content: center; align-items: start; }
     .app.playing .gcol { position: sticky; top: 8px; }
     .app.playing .pcol { padding-top: 6px; }
+    .app.playing .kolo { text-align: left; margin: 2px 0 0; }
     .app.playing .status { text-align: left; padding: 4px 0 0; min-height: 0; }
     .app.playing .status h2 { font-size: 27px; }
     .app.playing .status p { font-size: 15px; }
@@ -315,6 +334,7 @@
     :root { --bw: max(240px, min(540px, calc((100dvh - 232px) * .75))); }
   }
 
+  @keyframes titlein { from { transform: scale(.9); opacity: .4; } }
   @keyframes pop { from { transform: scale(.6); opacity: 0; } }
   @keyframes up { from { transform: translateY(40px); opacity: 0; } }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
@@ -410,6 +430,7 @@
      </div>
      <div class="pcol">
       <div id="playBox">
+        <p class="kolo" id="kolo"></p>
         <div class="status" aria-live="polite"><h2 id="status"></h2><p id="sub"></p></div>
         <div class="acts">
           <button class="btn" id="undoBtn" type="button" hidden>Vzít tah zpět</button>
@@ -419,8 +440,17 @@
       <div id="endBox" class="result" hidden>
         <h2 id="endL1"></h2>
         <p class="l2" id="endL2"></p>
+        <div class="pick" id="pick" hidden>
+          <small id="pickLbl" hidden>Vyber začátek dalšího kola</small>
+          <div class="seg" id="pickSeg" role="group" aria-labelledby="pickLbl" hidden></div>
+          <p class="pnote" id="pickNote"></p>
+        </div>
         <div class="stack"><button class="btn primary" id="endPrimary" type="button">Odveta</button></div>
-        <div class="ticket"><small id="tLabel">Sázka</small><b id="tRes"></b><div class="ser" id="tSer"></div></div>
+        <div class="ticket"><small id="tLabel">Sázka</small><b id="tRes"></b><div class="ser" id="tSer"></div>
+          <div class="ranks" id="tRanks" hidden>
+            <span class="rk own-x" id="rkX" hidden><span class="disc" aria-hidden="true"></span><span class="rkt"><b></b> <span class="ttl"></span></span></span>
+            <span class="rk own-o" id="rkO" hidden><span class="disc" aria-hidden="true"></span><span class="rkt"><b></b> <span class="ttl"></span></span></span>
+          </div></div>
         <p class="meta" id="endMeta"></p>
         <button class="btn quiet" id="endSecondary" type="button">Zkopírovat odkaz na hru</button>
       </div>
@@ -591,6 +621,8 @@
       <li>Místo tahu můžeš zvířátko ze zásoby položit na kterékoli volné pole. Slepice se vrací jako kuřátko. Kuřátko položené rovnou na poslední řadu se nepromění a nehne, dokud ho někdo nesebere.</li>
       <li>Vyhráváš, když chytíš soupeřova lva, nebo když tvůj lev dojde na soupeřovu poslední řadu a soupeř ho tam nemůže hned sebrat.</li>
       <li>Když se stejná pozice objeví potřetí, je remíza.</li>
+      <li class="vr-rule" hidden></li>
+      <li>Za výhry v sérii dostaneš titul: Učeň (1 výhra), Strážce zásoby (3) a Lví mistr (5). Od 3 výher má tvůj kotouč lakovaný okraj a razítko vítěze je hranaté.</li>
     </ol>`;
   $("rulesSheet").innerHTML = RULES();
   $("rulesAside").innerHTML = RULES();
@@ -602,7 +634,7 @@
   // ---------- sdílená místnost (stejně jako Psaníčko: mantledb.sh, bez účtu) ----------
   // Odkaz #r.<id>. Dokument {app, g, v, sx, so, u}: g = partie, v = počítadlo zápisů (každý zápis ho nejdřív
   // znovu přečte a ověří), sx / so = tokeny zařízení, která drží židle ("" = volno), u = čas zápisu.
-  // g = {x, o, s, m: ["m74", "dC5", …], t, k, kc, w: [výhry x, výhry o], r: "" | kdo se vzdal}
+  // g = {x, o, s, m: ["m74", "dC5", …], t, k, kc, w: [výhry x, výhry o], r: "" | kdo se vzdal, vr: varianta kola, n: číslo kola}
   const API = "https://mantledb.sh/v2/";
   const docUrl = id => `${API}zviratka-${id}/hra`;
   const BASE_URL = location.origin + location.pathname;
@@ -635,7 +667,9 @@
     const m = g.m.filter(v => typeof v === "string").slice(0, 600);
     const w = Array.isArray(g.w) ? [0, 1].map(k => Math.max(0, Math.min(999, g.w[k] | 0))) : [0, 0];
     const k = /^[1-6c]$/.test(g.k || "") ? g.k : "", kc = str(g.kc, 40);
-    return { x, o, s: g.s, m, t: Number.isFinite(g.t) ? g.t : null, k: k === "c" && !kc ? "" : k, kc, w, r: g.r === "x" || g.r === "o" ? g.r : "" };
+    // vr = varianta začátku kola (chybí ve starých dokumentech = klasika), n = číslo kola (remíza se do skóre nepočítá, proto zvlášť)
+    const n = Number.isInteger(g.n) && g.n > 0 ? Math.min(g.n, 9999) : w[0] + w[1] + 1;
+    return { x, o, s: g.s, m, t: Number.isFinite(g.t) ? g.t : null, k: k === "c" && !kc ? "" : k, kc, w, r: g.r === "x" || g.r === "o" ? g.r : "", vr: S.vrOf(g.vr), n };
   }
   const clone = g => ({ ...g, m: [...g.m], w: [...g.w] });
 
@@ -660,6 +694,16 @@
   const tahu = n => n === 1 ? "tah" : n >= 2 && n <= 4 ? "tahy" : "tahů";
   const buzz = (p = 12) => attempt(() => navigator.vibrate && navigator.vibrate(p));
   function seriesAfter() { const w = [...st.w], r = game.result; if (r && r.w) w[r.w === "x" ? 0 : 1]++; return w; }
+  const winsNow = () => ended() ? seriesAfter() : st.w;
+  const rankOf = p => S.rank(winsNow()[p === "x" ? 0 : 1]);
+  const vrLine = g => `${S.VARIANTS[g.vr].n}: ${S.VARIANTS[g.vr].d}`;
+  // titul, který vítěz právě dosáhl touto partií (nebo null)
+  function newTitle() {
+    const r = game && game.result; if (!r || !r.w) return null;
+    const k = r.w === "x" ? 0 : 1, w = seriesAfter()[k];
+    return S.rank(w) > S.rank(w - 1) ? { p: r.w, name: S.RANKS[S.rank(w)] } : null;
+  }
+  let pickKey = "", pickVr = "";
   const cellName = i => { const [r, c] = S.rc(i); return "ABC"[c] + (4 - r); };
   const say = t => { $("say").textContent = ""; requestAnimationFrame(() => $("say").textContent = t); };
 
@@ -685,17 +729,18 @@
     sc.classList.toggle("stake", !!(stk && stk.icon));
     document.querySelector("header.top").classList.toggle("has-score", !!sc.textContent);
     document.title = inGame && canPlay() ? "Jsi na tahu · Zvířátkové šógi" : "Zvířátkové šógi";
+    document.querySelectorAll(".vr-rule").forEach(li => { li.hidden = !st; if (st) li.textContent = "Tohle kolo: " + vrLine(st); });
     if (view === "setup") renderSetup();
     if (view === "intro") renderIntro();
     if (view === "play") renderGame();
     if (view === "share") renderShare();
   }
   function scoreText() {
-    const s = stake(st);
-    if (st.w[0] || st.w[1]) return { text: `${st.x} ${st.w[0]} : ${st.w[1]} ${st.o}` };
+    const s = stake(st), w = ended() && Date.now() >= animUntil ? seriesAfter() : st.w;   // skóre hned po konci partie, ne dřív než ji ukáže deska
+    if (w[0] || w[1]) return { text: `${st.x} ${w[0]} : ${w[1]} ${st.o}` };
     return s ? { text: s.short, icon: STAKE_ICON[st.k] || STAKE_ICON.c } : { text: "" };
   }
-  function discHTML(p, name) { return `<span class="disc own-${p}" style="background:var(--pc)" aria-hidden="true">${(name[0] || "?").toLocaleUpperCase("cs")}</span>`; }
+  function discHTML(p, name, lak) { return `<span class="disc own-${p}${lak ? " lak" : ""}" style="background:var(--pc)" aria-hidden="true">${(name[0] || "?").toLocaleUpperCase("cs")}</span>`; }
 
   function renderSetup() {
     $("setupSubmit").disabled = busy;
@@ -729,7 +774,7 @@
   function seatHTML(p) {
     const on = !ended() && turn() === p;
     const tag = p === me ? (on ? "jsi na tahu" : "ty") : on ? "na tahu" : me ? "soupeř" : "";
-    return { on, html: `<div class="who">${discHTML(p, nameOf(st, p))}<span><span class="nm"></span><span class="tag">${tag}</span></span></div><div class="tray own-${p}" data-tray="${p}" aria-label="Zásoba: ${p === me ? "tvoje" : nameOf(st, p)}"></div>` };
+    return { on, html: `<div class="who">${discHTML(p, nameOf(st, p), rankOf(p) >= 2)}<span><span class="nm"></span><span class="tag">${tag}</span></span></div><div class="tray own-${p}" data-tray="${p}" aria-label="Zásoba: ${p === me ? "tvoje" : nameOf(st, p)}"></div>` };
   }
 
   function renderGame() {
@@ -847,6 +892,7 @@
       if (game.count === 2) sub = "Pozor: tahle pozice už tu jednou byla. Potřetí je remíza.";
     } else if (freeSeat() === opp) { h = "Odkaz ještě nikdo neotevřel."; sub = "Pošli ho do chatu. Jakmile soupeř přijme výzvu, uvidíš to tady."; }
     else { h = `${nameOf(st, opp)} přemýšlí…`; sub = "Tah se tu objeví sám. Stránku můžeš klidně zavřít."; }
+    $("kolo").textContent = `Kolo ${st.n} · ${S.VARIANTS[st.vr].n}`; $("kolo").dataset.vr = st.vr;
     $("status").textContent = h;
     $("sub").textContent = sub; $("sub").hidden = !sub;
     $("undoBtn").hidden = !lastIsMine() || busy;
@@ -876,6 +922,7 @@
     h.hidden = !r || view !== "play";
     if (!r) return;
     h.innerHTML = WHY[r.why].stamp;
+    h.classList.toggle("sq", !!r.w && rankOf(r.w) >= 2);
     // razítko sedne na prázdné pole dost daleko od posledního tahu (a na úzkém displeji co nejníž, kam se stránka po konci doposune)
     const p0 = persp(), to = game.last ? game.last.to : 5, [tr, tc] = S.rc(to), narrow = matchMedia("(max-width: 979px)").matches;
     let best = -1, bs = -1e9;
@@ -899,18 +946,71 @@
     else if (!me) { $("endL1").textContent = WHY[r.why].third; $("endL2").textContent = `Vyhrává ${W}.`; $("endL2").className = "l2"; }
     else if (won) { $("endL1").textContent = WHY[r.why].win; $("endL2").textContent = "Vyhráváš!"; $("endL2").className = "l2 win"; }
     else { $("endL1").textContent = WHY[r.why].lose; $("endL2").textContent = `Vyhrává ${W}. Tentokrát.`; $("endL2").className = "l2"; }
-    $("endMeta").textContent = `partie ${st.w[0] + st.w[1] + 1} · ${st.m.length} ${tahu(st.m.length)}`;
+    $("endMeta").textContent = `Kolo ${st.n} · ${S.VARIANTS[st.vr].n} · ${st.m.length} ${tahu(st.m.length)}`;
     $("tLabel").textContent = s ? "Sázka" : "Výsledek";
     $("tRes").textContent = !r.w ? (s ? "Sázka se přesouvá do odvety." : "Nikdo nevyhrál.")
       : !me ? (s ? s.third(W, L) : `Vyhrává ${W}.`)
       : s ? (won ? s.win(W, L) : s.lose(W, L)) : (won ? "Bez sázky, jen pro radost." : `Vyhrává ${W}.`);
     $("tSer").textContent = `série: ${st.x} ${w[0]} : ${w[1]} ${st.o}`;
+    renderRanks();
+    renderPick();
     const loser = r.w ? nameOf(st, other(r.w)) : nameOf(st, other(st.s));
     $("endPrimary").hidden = !me;
     $("endPrimary").disabled = busy;
     if (!me) $("endSecondary").textContent = "Zkopírovat odkaz na hru";
     else if (!r.w || won) { $("endPrimary").textContent = `Odveta (začíná ${loser})`; $("endSecondary").textContent = "Zkopírovat odkaz na hru"; }
     else { $("endPrimary").textContent = "Chci odvetu"; $("endSecondary").textContent = "Uznat porážku (zkopíruje zprávu)"; }
+  }
+  // tituly za výhry v sérii; nově dosažený titul se v konci partie jednou krátce zvýrazní
+  const titleSeen = new Set();
+  function renderRanks() {
+    const w = seriesAfter(), nt = newTitle(), box = $("tRanks");
+    let any = false;
+    for (const p of ["x", "o"]) {
+      const rk = S.rank(w[p === "x" ? 0 : 1]), el = $(p === "x" ? "rkX" : "rkO");
+      el.hidden = !rk; any = any || !!rk;
+      if (!rk) continue;
+      const d = el.querySelector(".disc");
+      d.textContent = (nameOf(st, p)[0] || "?").toLocaleUpperCase("cs");
+      d.classList.toggle("lak", rk >= 2); el.classList.toggle("has-lak", rk >= 2);
+      el.querySelector("b").textContent = nameOf(st, p);
+      el.querySelector(".ttl").textContent = S.RANKS[rk];
+    }
+    box.hidden = !any;
+    const key = room.id + ":" + st.n;
+    if (nt && !$("endBox").hidden && !titleSeen.has(key) && !store.get("zs-ti-" + key)) {
+      titleSeen.add(key); store.set("zs-ti-" + key, "1");
+      const el = $(nt.p === "x" ? "rkX" : "rkO");
+      el.classList.add("fresh");
+      setTimeout(() => el.classList.remove("fresh"), 1900);
+    }
+  }
+  // další kolo: poražený vybírá ze 2 nabídnutých variant, jinak (výhra, remíza) platí první
+  function renderPick() {
+    const r = game.result, off = S.offer(room.id, st.n + 1, st.vr), chooser = r.w ? other(r.w) : null, choose = !!me && me === chooser;
+    const key = room.id + ":" + st.n;
+    if (pickKey !== key) { pickKey = key; pickVr = off[0]; }
+    if (!off.includes(pickVr)) pickVr = off[0];
+    const seg = $("pickSeg"), sg = off.join() + "|" + choose;
+    $("pick").hidden = false;
+    $("pickLbl").hidden = !choose; seg.hidden = !choose;
+    if (choose) {
+      if (seg.dataset.sig !== sg) {
+        seg.dataset.sig = sg; seg.textContent = "";
+        off.forEach(v => {
+          const b = document.createElement("button");
+          b.type = "button"; b.dataset.vr = v; b.textContent = S.VARIANTS[v].n;
+          b.addEventListener("click", () => { pickVr = v; renderPick(); });
+          seg.append(b);
+        });
+      }
+      [...seg.children].forEach(b => b.setAttribute("aria-pressed", String(b.dataset.vr === pickVr)));
+      $("pickNote").textContent = `${S.VARIANTS[pickVr].n}: ${S.VARIANTS[pickVr].d}`;
+    } else {
+      seg.dataset.sig = "";
+      $("pickNote").textContent = `Další kolo: ${S.VARIANTS[off[0]].n}.` + (r.w && me ? " Variantu volí poražený." : "");
+    }
+    $("pick").dataset.vr = choose ? pickVr : off[0];
   }
   function concedeText() {
     const r = game.result, s = stake(st), W = nameOf(st, r.w), L = nameOf(st, other(r.w));
@@ -1082,7 +1182,7 @@
       animUntil = Date.now() + t;
       if (game.result && !calm()) { h.style.animationDelay = (t + 120) + "ms"; void h.offsetWidth; h.classList.add("slam"); }
       if (game.result) endBuzz(t);
-      say(narrate(info, g) + (game.result ? " " + $("endL1").textContent + " " + $("endL2").textContent : ""));
+      say(narrate(info, g) + (game.result ? " " + $("endL1").textContent + " " + $("endL2").textContent + (newTitle() ? " Nový titul: " + newTitle().name + "." : "") : ""));
     }
   }
 
@@ -1103,7 +1203,7 @@
 
   // ---------- zápis do místnosti ----------
   // otisk partie: změna počítadla bez změny partie (např. soupeř právě přijal výzvu) není konflikt
-  const sig = g => g ? [g.x, g.o, g.s, g.m.join(","), g.w.join(":"), g.r, g.k, g.kc].join("|") : "";
+  const sig = g => g ? [g.x, g.o, g.s, g.m.join(","), g.w.join(":"), g.r, g.k, g.kc, g.vr, g.n].join("|") : "";
   async function commit(next, ok, conflictText, base = st) {
     busy = true; busySince = Date.now(); pollSeq++; render();
     setTimeout(() => { if (busy) render(); }, 950);     // „Zapisuju tah…“ se ukáže, až když zápis trvá
@@ -1131,7 +1231,7 @@
     if (!g || (d.v === room.v && !force)) return;
     const prev = st;
     room.v = d.v; lastChange = Date.now();
-    const sameGame = prev && g.x === prev.x && g.o === prev.o && g.s === prev.s && g.w[0] === prev.w[0] && g.w[1] === prev.w[1];
+    const sameGame = prev && g.x === prev.x && g.o === prev.o && g.s === prev.s && g.w[0] === prev.w[0] && g.w[1] === prev.w[1] && g.vr === prev.vr && g.n === prev.n;
     const grew = sameGame && g.m.length === prev.m.length + 1 && prev.m.every((x, i) => g.m[i] === x);
     if (view === "intro") { setGame(g); if (!freeSeat()) show("play"); else render(); return; }
     // partie beze změny (soupeř jen přijal výzvu): výběr figurky zůstává
@@ -1221,10 +1321,13 @@
   async function rematch() {
     if (busy || !me || !ended()) return;
     const r = game.result;
-    const next = { x: st.x, o: st.o, s: r.w ? other(r.w) : other(st.s), m: [], t: null, k: st.k, kc: st.kc, w: seriesAfter(), r: "" };
+    // variantu volí poražený z nabídnuté dvojice; když odvetu spouští vítěz nebo je remíza, platí první nabídnutá
+    const n = st.n + 1, off = S.offer(room.id, n, st.vr), chooser = r.w ? other(r.w) : null;
+    const vr = me === chooser && off.includes(pickVr) ? pickVr : off[0];
+    const next = { x: st.x, o: st.o, s: r.w ? other(r.w) : other(st.s), m: [], t: null, k: st.k, kc: st.kc, w: seriesAfter(), r: "", vr, n };
     if (!await commit(next, cur => !!S.play(cur).result, "Odvetu už mezitím založil soupeř.")) return;
     showGame(next, false);
-    say(`Odveta. Začíná ${nameOf(next, next.s)}.`);
+    say(`Kolo ${n}, ${S.VARIANTS[vr].n}. Začíná ${nameOf(next, next.s)}.`);
   }
   async function resign() {
     if (busy || !me || ended()) return;
@@ -1378,7 +1481,7 @@
     store.set("zs-name", x);
     let k = $("stakeSel").value, kc = "";
     if (k === "c") { kc = $("stakeCustom").value.trim().slice(0, 40); if (!kc) k = ""; }
-    createRoom({ x, o, s: starter, m: [], t: null, k, kc, w: [0, 0], r: "" });
+    createRoom({ x, o, s: starter, m: [], t: null, k, kc, w: [0, 0], r: "", vr: "k", n: 1 });
   });
 
   // ---------- start ----------

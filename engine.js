@@ -22,14 +22,50 @@
   const goalRow = p => p === "x" ? 0 : ROWS - 1;
   const rc = i => [Math.floor(i / COLS), i % COLS];
 
-  function initial(starter) {
-    const b = new Array(CELLS).fill(null);
+  // Varianty začátku kola. Všechny jsou souměrné podle středu desky (pole i ↔ 11 − i), tedy pro oba hráče stejné.
+  // o = rozestavení hráče „o“ v domácích řadách [pole, typ]; hráč „x“ dostane totéž otočené o 180°.
+  // hand = figurky, které má každý hráč na začátku v zásobě.
+  const VARIANTS = {
+    k: { n: "Klasika", d: "lev, žirafa a slon v domácí řadě, kuřátko před lvem.",
+         o: [[0, "G"], [1, "L"], [2, "E"], [4, "C"]], hand: [] },
+    d: { n: "Dárek", d: "oba začínají s kuřátkem navíc v zásobě.",
+         o: [[0, "G"], [1, "L"], [2, "E"], [4, "C"]], hand: ["C"] },
+    p: { n: "Prohozená křídla", d: "žirafa a slon si vyměnili strany.",
+         o: [[0, "E"], [1, "L"], [2, "G"], [4, "C"]], hand: [] },
+    b: { n: "Bez kuřátek", d: "na desce nejsou kuřátka, každý má jedno v zásobě a položí ho, kam chce.",
+         o: [[0, "G"], [1, "L"], [2, "E"]], hand: ["C"] },
+    s: { n: "Slepičí start", d: "kuřátka začínají jako slepice, jdou i do stran a dozadu.",
+         o: [[0, "G"], [1, "L"], [2, "E"], [4, "H"]], hand: [] },
+  };
+  const VR_KEYS = Object.keys(VARIANTS);
+  const vrOf = v => VARIANTS[v] ? v : "k";   // chybějící nebo neznámá varianta (starý dokument) = klasika
+
+  function initial(starter, vr) {
+    const V = VARIANTS[vrOf(vr)];
+    const b = new Array(CELLS).fill(null), h = { x: [], o: [] };
     let id = 0;
     const put = (i, t, p) => { b[i] = { t, p, id: id++ }; };
-    put(0, "G", "o"); put(1, "L", "o"); put(2, "E", "o"); put(4, "C", "o");
-    put(7, "C", "x"); put(9, "E", "x"); put(10, "L", "x"); put(11, "G", "x");
-    return { b, h: { x: [], o: [] }, turn: starter === "o" ? "o" : "x" };
+    V.o.forEach(([i, t]) => put(i, t, "o"));
+    [...V.o].reverse().forEach(([i, t]) => put(CELLS - 1 - i, t, "x"));
+    V.hand.forEach(t => { h.o.push({ t, id: id++ }); h.x.push({ t, id: id++ }); });
+    return { b, h, turn: starter === "o" ? "o" : "x" };
   }
+
+  // nabídka dvou variant pro další kolo: deterministicky ze seedu (id místnosti + číslo kola), bez té, která se právě hrála
+  function offer(roomId, round, prev) {
+    let h = 2166136261;
+    const str = String(roomId) + ":" + (round | 0);
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    const rnd = () => { h = (h + 0x6D2B79F5) >>> 0; let t = h; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const pool = VR_KEYS.filter(k => k !== vrOf(prev));
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    return pool.slice(0, 2);
+  }
+
+  // postup v sérii podle počtu výher: 0 nic, 1 Učeň, 3 Strážce zásoby, 5 Lví mistr; od úrovně 2 kosmetická odměna
+  const RANKS = ["", "Učeň", "Strážce zásoby", "Lví mistr"];
+  const rank = w => w >= 5 ? 3 : w >= 3 ? 2 : w >= 1 ? 1 : 0;
+
   const clone = s => ({ b: s.b.map(c => c && { ...c }), h: { x: s.h.x.map(c => ({ ...c })), o: s.h.o.map(c => ({ ...c })) }, turn: s.turn });
 
   // pole, na která figurka z pole i dosáhne (bez ohledu na obsazenost)
@@ -106,7 +142,7 @@
   // přehraje celou partii; neplatný tah partii utne (vrátí ok:false)
   // výsledek: { w: "x"|"o"|null, why: "lev"|"cil"|"vzdal"|"opak"|"blok" }
   function play(g) {
-    let s = initial(g.s), result = null, last = null, ok = true, prev = null;
+    let s = initial(g.s, g.vr), result = null, last = null, ok = true, prev = null;
     const seen = new Map([[key(s), 1]]);
     for (let n = 0; n < g.m.length; n++) {
       const mv = dec(g.m[n]);
@@ -127,6 +163,6 @@
     return { s, prev, last, result, ok, count: seen.get(key(s)) || 1 };
   }
 
-  root.Sogi = { ROWS, COLS, CELLS, DIRS, NAMES, other, goalRow, rc, initial, reach, attacked, moves, legal, enc, dec, apply, key, play };
+  root.Sogi = { ROWS, COLS, CELLS, DIRS, NAMES, VARIANTS, VR_KEYS, RANKS, vrOf, offer, rank, other, goalRow, rc, initial, reach, attacked, moves, legal, enc, dec, apply, key, play };
   if (typeof module !== "undefined") module.exports = root.Sogi;
 })(typeof globalThis !== "undefined" ? globalThis : this);
