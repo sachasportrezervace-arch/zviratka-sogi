@@ -1,5 +1,11 @@
 # Deník – Zvířátkové šógi
 
+## 2026-10-31 · Claude (kolo 3 po kritice design-eye, verdikt „PROFI, ale těsně“)
+- Hotovo lokálně: žirafa menší a níž, aby směrové tečky ležely na volném okraji, kratší růžky, krk končí zaobleným ramenem; razítko 36 % a text min. 14 px (`max(14px, 4.6cqi)`, `letter-spacing .02em`); doposunutí k výsledku a Odvetě ~720 ms po startu razítka (v testu v okně do 1,8 s po zobrazení konce); vítězný kámen v barvě týmu s 25% halem (červená jen pro sebrání a razítko); `.seat.on` průhledné s linkou `inset 0 -3px var(--pc)`; cílové tečky 75 % s halem 3 px; „o kafe“ v hlavičce má obrysovou SVG ikonu sázky (hrnek, špendlík, kopeček, klapka, otazník, medaile, vlajka) a váhu 700 v `--sumi`.
+- Celkem za den: pocit ze hry (kratší přeběhnutí, stopa soupeře, bez dekorací), dvě kola kritiky design-eye (poslední tah šedě, výběr a cíle v barvě strany, zaoblení 10/14/22, žirafa).
+- Testy lokálně: engine 10, dva prohlížeče 33, desktop+iPhone 143, pocit 29.
+- Neověřeno: skutečný iPhone.
+
 ## 2026-10-31 · Claude (kolo 2 po kritice design-eye)
 - Hotovo lokálně, **nenasazeno a nepushnuto**: poslední tah neutrálně šedý (červená jen pro „sebereš“, razítko, výhru), výběr výrazný ve světlém i tmavém režimu bez závislosti na barvě strany, cílové tečky v barvě mé strany, razítko 32 % šířky uvnitř rámu desky a mimo vítězný tah, nadpisy s word-spacing, úvodní kameny v barvě mé strany, přepínač „Kdo začíná“ plný, „nepovinné“ na řádku s popiskem, zaoblení 10/14/22, nová žirafa, pás `.seat.on` z barvy hráče, focus polí uvnitř.
 - Testy: engine 10, dva prohlížeče 33, desktop+iPhone 143, pocit 29. Jednou spadl desktop-iphone na časový limit při souběžném běhu s ostatními testy, samostatně opakovaně zelený.

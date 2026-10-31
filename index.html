@@ -70,6 +70,8 @@
   .iconbtn:hover { background: var(--washi-2); }
   .iconbtn svg { width: 24px; height: 24px; }
   .score + .iconbtn { margin-left: 0; }
+  .score.stake { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--sumi); }
+  .score.stake svg { flex: none; }
   @media (max-width: 520px) { .top.has-score .brand b { display: none; } }
 
   /* ---------- buttons & forms ---------- */
@@ -107,7 +109,7 @@
 
   /* ---------- seats & trays ---------- */
   .seat { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 14px; transition: background .3s; }
-  .seat.on { background: color-mix(in srgb, var(--pc) 10%, var(--washi)); }
+  .seat.on { background: transparent; box-shadow: inset 0 -3px 0 var(--pc); }
   .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .disc { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--pc); color: #fff; font: 400 15px/1 var(--display); flex: none; position: relative; }
   .seat.on .disc { box-shadow: 0 0 0 2px var(--washi), 0 0 0 4.5px var(--pt); }
@@ -161,12 +163,12 @@
   .cell .pc { width: 86%; height: 86%; }
   .cell .pc.victim { position: absolute; left: 7%; top: 7%; }
   .cell.target { background: color-mix(in srgb, var(--mine) 8%, transparent); }
-  .cell.target .mark { position: absolute; width: 24%; height: 24%; border-radius: 50%; background: color-mix(in srgb, var(--mine) 60%, transparent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--mine) 22%, transparent); pointer-events: none; animation: pop .22s var(--ease) both; transition: transform .15s var(--ease); }
+  .cell.target .mark { position: absolute; width: 24%; height: 24%; border-radius: 50%; background: color-mix(in srgb, var(--mine) 75%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mine) 30%, transparent); pointer-events: none; animation: pop .22s var(--ease) both; transition: transform .15s var(--ease); }
   .cell.target.cap { background: color-mix(in srgb, var(--hanko) 14%, transparent); }
   .cell.target.cap .mark { width: 94%; height: 94%; border-radius: 18%; background: transparent; box-shadow: none; border: 4px solid var(--hanko); }
   .cell.sel .pc { transform: translateY(-6px); }
   .cell.sel .tile { box-shadow: 0 0 0 3px #FCF2DF, 0 0 0 6px var(--pc), 0 12px 18px -6px rgba(60,40,20,.5); }
-  .cell.win .tile { box-shadow: 0 0 0 3px var(--hanko), var(--shadow); }
+  .cell.win .tile { box-shadow: 0 0 0 3px var(--pc), 0 0 0 8px color-mix(in srgb, var(--pc) 25%, transparent), var(--shadow); }
   .cell .pc { transition: transform .2s var(--ease); }
   .cell:active .pc { transform: scale(.95); }
   .cell.sel:active .pc { transform: translateY(-3px) scale(.96); }
@@ -184,6 +186,7 @@
   .tile.down { transform: rotate(180deg); }
   .tile::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 8%; background: var(--pc); }
   .tile svg.art { position: absolute; left: 13%; top: 8%; width: 74%; height: 74%; overflow: visible; }
+  .tile svg.art.art-G { left: 17%; top: 15%; width: 66%; height: 66%; }
   .tile i { position: absolute; width: 9%; height: 9%; border-radius: 50%; background: var(--pc); transform: translate(-50%, -50%); opacity: .85; }
   .own-x { --pc: var(--ai); --pt: var(--ai-t); }
   .own-o { --pc: var(--kaki); --pt: var(--kaki-t); }
@@ -202,9 +205,9 @@
 
   /* ---------- end ---------- */
   .hanko {
-    word-spacing: 0; position: absolute; z-index: 5; left: var(--hx, 50%); top: var(--hy, 50%); width: 32%; aspect-ratio: 1; margin: -16% 0 0 -16%; border-radius: 50%;
+    word-spacing: 0; position: absolute; z-index: 5; left: var(--hx, 50%); top: var(--hy, 50%); width: 36%; aspect-ratio: 1; margin: -18% 0 0 -18%; border-radius: 50%;
     display: grid; place-items: center; text-align: center; color: var(--hanko); border: 3px solid var(--hanko); background: rgba(250,240,225,.92);
-    font: 400 3.95cqw/1.1 var(--display); word-spacing: 0; transform: rotate(-11deg); pointer-events: none;
+    font: 400 max(14px, 4.6cqi)/1.1 var(--display); word-spacing: 0; letter-spacing: .02em; transform: rotate(-11deg); pointer-events: none;
     box-shadow: inset 0 0 0 2px rgba(250,240,225,.92), inset 0 0 0 4px var(--hanko);
   }
   .hanko.slam { animation: slam .42s var(--ease) both; }
@@ -508,9 +511,9 @@
       `<circle cx="50" cy="55" r="22" fill="#F6D08A" ${st0}/>` + eyes(51, 8.5) + blush(60, 13) +
       `<path d="M45.5 57.5 Q50 55 54.5 57.5 Q50 63 45.5 57.5Z" fill="#7A3B2A"/><path d="M44 64.5 Q47 67.5 50 63.5 Q53 67.5 56 64.5" fill="none" ${st0} stroke-width="2.4"/>`,
     G: () =>
-      `<path d="M42 56 L35 120 L65 120 L58 56Z" fill="#F0BD4F" ${st0}/>` +
-      `<ellipse cx="49" cy="84" rx="6.5" ry="8.5" transform="rotate(-8 49 84)" fill="#C77A35"/><ellipse cx="56" cy="104" rx="6" ry="7.5" transform="rotate(8 56 104)" fill="#C77A35"/>` +
-      `<path d="M43 24 L41 10 M57 24 L59 10" ${st0} stroke-width="3.4"/><circle cx="41" cy="9" r="4.8" fill="#9C5A2B" ${st0} stroke-width="2.6"/><circle cx="59" cy="9" r="4.8" fill="#9C5A2B" ${st0} stroke-width="2.6"/>` +
+      `<path d="M42 56 L38 88 Q37 96 46 96 L54 96 Q63 96 62 88 L58 56Z" fill="#F0BD4F" ${st0}/>` +
+      `<ellipse cx="49" cy="72" rx="6" ry="7.5" transform="rotate(-8 49 72)" fill="#C77A35"/><ellipse cx="55" cy="86" rx="4.6" ry="5.2" transform="rotate(8 55 86)" fill="#C77A35"/>` +
+      `<path d="M43 24 L42 14 M57 24 L58 14" ${st0} stroke-width="3.4"/><circle cx="42" cy="13" r="4.8" fill="#9C5A2B" ${st0} stroke-width="2.6"/><circle cx="58" cy="13" r="4.8" fill="#9C5A2B" ${st0} stroke-width="2.6"/>` +
       `<ellipse cx="27" cy="35" rx="9" ry="4.5" transform="rotate(-20 27 35)" fill="#F0BD4F" ${st0}/><ellipse cx="73" cy="35" rx="9" ry="4.5" transform="rotate(20 73 35)" fill="#F0BD4F" ${st0}/>` +
       `<ellipse cx="50" cy="38" rx="19" ry="18" fill="#F0BD4F" ${st0}/>` +
       `<ellipse cx="60" cy="27" rx="4.6" ry="3.6" transform="rotate(20 60 27)" fill="#C77A35"/><ellipse cx="38" cy="29" rx="4" ry="3.2" transform="rotate(-15 38 29)" fill="#C77A35"/>` +
@@ -540,7 +543,7 @@
       `<path d="M44.5 57.5 L55.5 57.5 L50 64.5Z" fill="#F08A24" ${st0} stroke-width="2.4"/>`,
   };
   const artCache = {};
-  const art = t => artCache[t] || (artCache[t] = `<svg class="art" viewBox="0 0 100 100" aria-hidden="true">${ART[t]()}</svg>`);
+  const art = t => artCache[t] || (artCache[t] = `<svg class="art art-${t}" viewBox="0 0 100 100" aria-hidden="true">${ART[t]()}</svg>`);
   // tečky na okraji kamene ukazují směry tahu (ve vlastní orientaci figurky)
   function dots(t) { return S.DIRS[t].map(([dr, dc]) => `<i style="left:${50 + dc * 37}%;top:${50 + dr * 36}%"></i>`).join(""); }
   // figurka: up = hledí „nahoru“ z pohledu tohoto zařízení
@@ -559,6 +562,17 @@
     "4": { text: "Vítěz vybírá film na večer.", short: "o film", third: w => `${w} vybírá film na večer.`, win: () => "Film na večer vybíráš ty.", lose: w => `${w} vybírá film na večer.` },
     "5": { text: "Kdo prohraje, pravdivě odpoví na jednu otázku.", short: "o otázku", third: (w, l) => `${l} pravdivě odpoví na jednu otázku.`, win: (w, l) => `${l} ti pravdivě odpoví na jednu otázku.`, lose: () => "Odpovídáš na jednu otázku. Pravdivě." },
     "6": { text: "Jen o čest.", short: "o čest", third: w => `Čest patří: ${w}.`, win: () => "Čest je tvoje.", lose: w => `Čest patří: ${w}.` },
+  };
+  // malé obrysové ikony sázky (stejný tah jako ostatní ikony, bez výplní a emoji)
+  const ico = d => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const STAKE_ICON = {
+    "1": ico('<path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M9 3.5v2M12.5 3.5v2"/>'),
+    "2": ico('<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.2"/>'),
+    "3": ico('<path d="M7.5 11.5 12 21l4.5-9.5"/><path d="M7 11.5a5 5 0 0 1 10 0z"/>'),
+    "4": ico('<rect x="3.5" y="8" width="17" height="12" rx="2"/><path d="m3.5 8 2-4 3.5 4 3-4 3.5 4 2-4"/>'),
+    "5": ico('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 1 1 3.6 2.4c-.8.4-1.1 1-1.1 1.8"/><path d="M12 17v.01"/>'),
+    "6": ico('<circle cx="12" cy="9" r="5.5"/><path d="m8.5 13.5-1.5 7 5-2.5 5 2.5-1.5-7"/>'),
+    c: ico('<path d="M6 21V4"/><path d="M6 5h11l-2.5 4 2.5 4H6"/>'),
   };
   function stake(g) {
     if (STAKES[g.k]) return STAKES[g.k];
@@ -665,8 +679,11 @@
   function render() {
     const inGame = !!st && !!room && view === "play";
     $("menuBtn").hidden = !inGame;
-    $("score").textContent = st && room && view !== "setup" && view !== "info" ? scoreText() : "";
-    document.querySelector("header.top").classList.toggle("has-score", !!$("score").textContent);
+    const sc = $("score"), stk = st && room && view !== "setup" && view !== "info" ? scoreText() : null;
+    sc.textContent = stk ? stk.text : "";
+    if (stk && stk.icon) sc.insertAdjacentHTML("afterbegin", stk.icon);
+    sc.classList.toggle("stake", !!(stk && stk.icon));
+    document.querySelector("header.top").classList.toggle("has-score", !!sc.textContent);
     document.title = inGame && canPlay() ? "Jsi na tahu · Zvířátkové šógi" : "Zvířátkové šógi";
     if (view === "setup") renderSetup();
     if (view === "intro") renderIntro();
@@ -674,10 +691,9 @@
     if (view === "share") renderShare();
   }
   function scoreText() {
-    const s = stake(st), parts = [];
-    if (st.w[0] || st.w[1]) parts.push(`${st.x} ${st.w[0]} : ${st.w[1]} ${st.o}`);
-    else if (s) parts.push(s.short);
-    return parts.join(" · ");
+    const s = stake(st);
+    if (st.w[0] || st.w[1]) return { text: `${st.x} ${st.w[0]} : ${st.w[1]} ${st.o}` };
+    return s ? { text: s.short, icon: STAKE_ICON[st.k] || STAKE_ICON.c } : { text: "" };
   }
   function discHTML(p, name) { return `<span class="disc own-${p}" style="background:var(--pc)" aria-hidden="true">${(name[0] || "?").toLocaleUpperCase("cs")}</span>`; }
 
@@ -870,8 +886,8 @@
       if (sc > bs) { bs = sc; best = i; }
     }
     const v = p0 === "o" ? 11 - best : best;
-    // střed razítka drží uvnitř rámu desky (poloměr 16 % šířky; deska je 133 % šířky vysoká)
-    const cx = Math.min(81, Math.max(19, ((v % 3) + .5) / 3 * 100)), cy = Math.min(87, Math.max(13, (Math.floor(v / 3) + .5) / 4 * 100));
+    // střed razítka drží uvnitř rámu desky (poloměr 18 % šířky; deska je 133 % šířky vysoká)
+    const cx = Math.min(80, Math.max(20, ((v % 3) + .5) / 3 * 100)), cy = Math.min(86, Math.max(14, (Math.floor(v / 3) + .5) / 4 * 100));
     h.style.setProperty("--hx", cx + "%");
     h.style.setProperty("--hy", cy + "%");
   }
@@ -1081,7 +1097,7 @@
       if (shot !== endBuzz.n || b.hidden || view !== "play") return;
       const over = b.getBoundingClientRect().bottom + 12 - innerHeight;
       if (over > 0) window.scrollBy({ top: over, behavior: "smooth" });
-    }, t + 380);
+    }, t + 720);                                   // razítko dopadá ~300 ms po startu, doposun začíná ~420 ms po dopadu
   }
   endBuzz.n = 0;
 

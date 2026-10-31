@@ -130,7 +130,7 @@ const shot = (p, n) => p.screenshot({ path: path.join(OUT, n + ".png") });
           await p.waitForTimeout(250);
           await shot(p, `${pre}-05a-razitko-dopad`);
         } else {
-          await p.waitForTimeout(3500);
+          await p.waitForTimeout(1800);
           await shot(p, `${pre}-05b-konec-po-doposunuti`);
           console.log(pre, "po doposunutí scrollY:", await p.evaluate(() => Math.round(scrollY)), "odveta v okně:", await p.evaluate(() => document.getElementById("endPrimary").getBoundingClientRect().bottom <= innerHeight));
         }
