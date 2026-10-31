@@ -63,9 +63,10 @@
   header.top { display: flex; align-items: center; gap: 10px; min-height: 44px; }
   .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; min-width: 0; }
   .brand svg { width: 30px; height: 30px; flex: none; }
-  .brand b { font: 400 17px/1 var(--display); letter-spacing: -.01em; white-space: nowrap; }
+  .brand b { font: 400 17px/1 var(--display); white-space: nowrap; }
+  h1, h2, .brand b { word-spacing: .16em; letter-spacing: 0; }
   .score { margin-left: auto; font-weight: 700; font-size: 14px; color: var(--sumi-2); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .iconbtn { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 0; background: transparent; display: grid; place-items: center; }
+  .iconbtn { flex: none; width: 44px; height: 44px; border-radius: 10px; border: 0; background: transparent; display: grid; place-items: center; }
   .iconbtn:hover { background: var(--washi-2); }
   .iconbtn svg { width: 24px; height: 24px; }
   .score + .iconbtn { margin-left: 0; }
@@ -91,8 +92,9 @@
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   label.f { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
   label.f small { font-weight: 500; color: var(--sumi-2); }
+  .lbl { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .in {
-    width: 100%; min-height: 50px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--line); background: var(--washi);
+    width: 100%; min-height: 50px; padding: 12px 14px; border-radius: 10px; border: 2px solid var(--line); background: var(--washi);
     font-size: 16px; font-weight: 500; caret-color: var(--kaki);
   }
   .in:focus { outline: none; border-color: var(--sumi); }
@@ -101,11 +103,11 @@
   textarea.in { resize: none; min-height: 120px; line-height: 1.45; }
   .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 14px; background: var(--washi-2); }
   .seg button { min-height: 44px; border: 0; border-radius: 10px; background: transparent; font-weight: 700; }
-  .seg button[aria-pressed="true"] { background: var(--washi); box-shadow: var(--shadow); }
+  .seg button[aria-pressed="true"] { background: var(--sumi); color: var(--washi); }
 
   /* ---------- seats & trays ---------- */
-  .seat { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 16px; transition: background .3s; }
-  .seat.on { background: color-mix(in srgb, var(--pc) 15%, transparent); }
+  .seat { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 14px; transition: background .3s; }
+  .seat.on { background: color-mix(in srgb, var(--pc) 10%, var(--washi)); }
   .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .disc { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--pc); color: #fff; font: 400 15px/1 var(--display); flex: none; position: relative; }
   .seat.on .disc { box-shadow: 0 0 0 2px var(--washi), 0 0 0 4.5px var(--pt); }
@@ -113,21 +115,21 @@
   .who .tag { display: block; font-weight: 700; font-size: 12px; color: var(--sumi-2); }
   .seat.on .who .tag { color: var(--pt); }
   .tray {
-    position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-height: 52px; padding: 4px 6px; border-radius: 12px;
+    position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-height: 52px; padding: 4px; border-radius: 10px;
     background: linear-gradient(180deg, var(--wood-2), #E6CB98); box-shadow: inset 0 2px 4px rgba(90,60,20,.25);
   }
   .tray .empty { font-size: 12px; font-weight: 700; color: #65502F; padding: 0 6px; }
   .hp { width: 44px; height: 44px; padding: 0; border: 0; background: transparent; position: relative; flex: none; border-radius: 10px; }
   .hp:disabled { cursor: default; }
   .hp.sel .pc { transform: translateY(-5px); }
-  .hp.sel .tile { box-shadow: 0 0 0 3px var(--sumi), 0 8px 14px -4px rgba(60,40,20,.45); }
+  .hp.sel .tile { box-shadow: 0 0 0 2px #FCF2DF, 0 0 0 4.5px var(--pc), 0 8px 14px -4px rgba(60,40,20,.45); }
   .hp .pc { width: 100%; height: 100%; transition: transform .2s var(--ease); }
   .hp:not(:disabled):active .pc { transform: scale(.92); }
   .hp.sel:not(:disabled):active .pc { transform: translateY(-3px) scale(.95); }
-  .hp[data-n="2"]::before { content: ""; position: absolute; inset: 0; transform: translate(5px, -4px); border-radius: 19%; background: var(--wood-2); border: 2px solid var(--pc); box-shadow: var(--shadow); }
+  .hp[data-n="2"]::before { content: ""; position: absolute; inset: 0; transform: translate(4px, -3px); border-radius: 19%; background: var(--wood-2); border: 2px solid var(--pc); box-shadow: var(--shadow); }
   .hp .cnt { position: absolute; right: -6px; top: -7px; z-index: 2; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: var(--sumi); color: var(--washi); font: 900 12px/19px var(--ui); text-align: center; pointer-events: none; }
   .hp.got .tile { box-shadow: 0 0 0 3px var(--pc), var(--shadow); }
-  .tray.recv::after { content: ""; position: absolute; inset: 0; border-radius: 12px; box-shadow: 0 0 0 3px var(--pc); pointer-events: none; animation: recv .5s var(--ease) both; }
+  .tray.recv::after { content: ""; position: absolute; inset: 0; border-radius: 10px; box-shadow: 0 0 0 3px var(--pc); pointer-events: none; animation: recv .5s var(--ease) both; }
   .trayrow { display: grid; grid-template-columns: minmax(0, auto) 1fr; gap: 8px; align-items: center; }
 
   /* ---------- board ---------- */
@@ -142,27 +144,28 @@
     :root:not([data-theme="light"]) .tray { box-shadow: inset 0 2px 4px rgba(90,60,20,.25), 0 0 0 1px rgba(242,233,219,.1); }
   }
   .board::before { /* tatami */
-    content: ""; position: absolute; inset: 7px; border-radius: 8px; pointer-events: none;
+    content: ""; position: absolute; inset: 7px; border-radius: 10px; pointer-events: none;
     background:
       repeating-linear-gradient(90deg, rgba(120,105,50,.13) 0 1px, transparent 1px 5px),
       linear-gradient(180deg, var(--tatami), var(--tatami-2));
   }
   .cell { position: relative; border: 0; padding: 0; background: transparent; display: grid; place-items: center; touch-action: manipulation; }
+  .cell:focus-visible { outline-offset: -4px; }
   .cell::before { content: ""; position: absolute; inset: 0; border-right: 1.5px solid var(--tatami-line); border-bottom: 1.5px solid var(--tatami-line); pointer-events: none; }
   .cell:nth-child(3n)::before { border-right: 0; }
   .cell:nth-last-child(-n+3)::before { border-bottom: 0; }
   .cell.goal-them::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: color-mix(in srgb, var(--opc) 12%, transparent); }
-  .cell.from::after { content: ""; position: absolute; inset: 22%; border-radius: 50%; border: 3px dashed color-mix(in srgb, var(--mpc) 85%, transparent); }
-  .cell.to { background: color-mix(in srgb, var(--mpc) 18%, transparent); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--mpc) 55%, transparent); }
+  .cell.from::after { content: ""; position: absolute; inset: 22%; border-radius: 50%; border: 3px dashed rgba(38,32,28,.45); }
+  .cell.to { background: rgba(38,32,28,.10); box-shadow: inset 0 0 0 3px rgba(38,32,28,.35); }
   .cell.to.fresh { animation: tonew .55s var(--ease) both; }
   .cell .pc { width: 86%; height: 86%; }
   .cell .pc.victim { position: absolute; left: 7%; top: 7%; }
-  .cell.target { background: color-mix(in srgb, var(--sumi) 5%, transparent); }
-  .cell.target .mark { position: absolute; width: 25%; height: 25%; border-radius: 50%; background: rgba(38,32,28,.36); pointer-events: none; animation: pop .22s var(--ease) both; transition: transform .15s var(--ease); }
+  .cell.target { background: color-mix(in srgb, var(--mine) 8%, transparent); }
+  .cell.target .mark { position: absolute; width: 24%; height: 24%; border-radius: 50%; background: color-mix(in srgb, var(--mine) 60%, transparent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--mine) 22%, transparent); pointer-events: none; animation: pop .22s var(--ease) both; transition: transform .15s var(--ease); }
   .cell.target.cap { background: color-mix(in srgb, var(--hanko) 14%, transparent); }
-  .cell.target.cap .mark { width: 94%; height: 94%; border-radius: 18%; background: transparent; border: 4px solid var(--hanko); }
+  .cell.target.cap .mark { width: 94%; height: 94%; border-radius: 18%; background: transparent; box-shadow: none; border: 4px solid var(--hanko); }
   .cell.sel .pc { transform: translateY(-6px); }
-  .cell.sel .tile { box-shadow: 0 0 0 3px var(--sumi), 0 12px 18px -6px rgba(60,40,20,.5); }
+  .cell.sel .tile { box-shadow: 0 0 0 3px #FCF2DF, 0 0 0 6px var(--pc), 0 12px 18px -6px rgba(60,40,20,.5); }
   .cell.win .tile { box-shadow: 0 0 0 3px var(--hanko), var(--shadow); }
   .cell .pc { transition: transform .2s var(--ease); }
   .cell:active .pc { transform: scale(.95); }
@@ -170,7 +173,7 @@
   .cell.target:active .mark { transform: scale(1.3); }
   .board:not(.locked) .cell, .hp:not(:disabled) { cursor: pointer; }
   .board.locked .cell { cursor: default; }
-  @media (hover: hover) { .cell.target:hover { background: color-mix(in srgb, var(--sumi) 13%, transparent); } .cell.target.cap:hover { background: color-mix(in srgb, var(--hanko) 24%, transparent); } }
+  @media (hover: hover) { .cell.target:hover { background: color-mix(in srgb, var(--mine) 16%, transparent); } .cell.target.cap:hover { background: color-mix(in srgb, var(--hanko) 24%, transparent); } }
 
   /* ---------- pieces ---------- */
   .pc { position: relative; display: block; pointer-events: none; }
@@ -180,7 +183,7 @@
   }
   .tile.down { transform: rotate(180deg); }
   .tile::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 8%; background: var(--pc); }
-  .tile svg.art { position: absolute; left: 13%; top: 8%; width: 74%; height: 74%; }
+  .tile svg.art { position: absolute; left: 13%; top: 8%; width: 74%; height: 74%; overflow: visible; }
   .tile i { position: absolute; width: 9%; height: 9%; border-radius: 50%; background: var(--pc); transform: translate(-50%, -50%); opacity: .85; }
   .own-x { --pc: var(--ai); --pt: var(--ai-t); }
   .own-o { --pc: var(--kaki); --pt: var(--kaki-t); }
@@ -189,7 +192,7 @@
 
   /* ---------- status ---------- */
   .status { text-align: center; padding: 8px 4px 2px; min-height: 64px; }
-  .status h2 { margin: 0; font: 400 21px/1.15 var(--display); letter-spacing: -.01em; text-wrap: balance; }
+  .status h2 { margin: 0; font: 400 21px/1.15 var(--display); text-wrap: balance; }
   .status p { margin: 4px 0 0; font-size: 14px; color: var(--sumi-2); font-weight: 700; text-wrap: balance; }
   .acts { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
   .claims { align-items: center; }
@@ -199,13 +202,13 @@
 
   /* ---------- end ---------- */
   .hanko {
-    position: absolute; z-index: 5; left: var(--hx, 50%); top: var(--hy, 50%); width: 38%; aspect-ratio: 1; margin: -19% 0 0 -19%; border-radius: 50%;
-    display: grid; place-items: center; text-align: center; color: var(--hanko); border: 4px solid var(--hanko); background: rgba(250,240,225,.9);
-    font: 400 4.7cqw/1.08 var(--display); letter-spacing: -.01em; transform: rotate(-11deg); pointer-events: none;
-    box-shadow: inset 0 0 0 3px rgba(250,240,225,.9), inset 0 0 0 5.5px var(--hanko);
+    word-spacing: 0; position: absolute; z-index: 5; left: var(--hx, 50%); top: var(--hy, 50%); width: 32%; aspect-ratio: 1; margin: -16% 0 0 -16%; border-radius: 50%;
+    display: grid; place-items: center; text-align: center; color: var(--hanko); border: 3px solid var(--hanko); background: rgba(250,240,225,.92);
+    font: 400 3.95cqw/1.1 var(--display); word-spacing: 0; transform: rotate(-11deg); pointer-events: none;
+    box-shadow: inset 0 0 0 2px rgba(250,240,225,.92), inset 0 0 0 4px var(--hanko);
   }
   .hanko.slam { animation: slam .42s var(--ease) both; }
-  .result { margin-top: 6px; padding: 14px 16px; border-radius: 18px; background: var(--washi-2); text-align: center; }
+  .result { margin-top: 6px; padding: 14px 16px; border-radius: 22px; background: var(--washi-2); text-align: center; }
   .result h2 { margin: 0; font: 400 22px/1.12 var(--display); text-wrap: balance; }
   .result .l2 { margin: 4px 0 0; font-weight: 900; font-size: 17px; }
   .result .l2.win { color: var(--kaki-t); }
@@ -220,7 +223,7 @@
 
   /* ---------- intro / setup / share / info ---------- */
   .page { padding-top: 10px; }
-  .page h1 { margin: 6px 0 8px; font: 400 clamp(28px, 8.4vw, 38px)/1.06 var(--display); letter-spacing: -.02em; text-wrap: balance; }
+  .page h1 { margin: 6px 0 8px; font: 400 clamp(28px, 8.4vw, 38px)/1.06 var(--display); text-wrap: balance; }
   .page h1 em { font-style: normal; color: var(--kaki-t); }
   .lede { margin: 0 0 16px; color: var(--sumi-2); font-weight: 700; text-wrap: pretty; }
   .cast { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 16px; }
@@ -228,7 +231,7 @@
   .cast .pc { width: 100%; aspect-ratio: 1; }
   .cast figcaption { margin-top: 6px; font-size: 12px; font-weight: 700; line-height: 1.25; color: var(--sumi-2); }
   .cast figcaption b { display: block; font-size: 14px; color: var(--sumi); }
-  .card { padding: 16px; border-radius: 18px; background: var(--washi-2); margin-bottom: 14px; }
+  .card { padding: 16px; border-radius: 22px; background: var(--washi-2); margin-bottom: 14px; }
   .card small { display: block; font-weight: 700; font-size: 12px; letter-spacing: .04em; color: var(--sumi-2); }
   .card b { display: block; font-size: 18px; line-height: 1.3; }
   .vs { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-weight: 900; }
@@ -236,9 +239,9 @@
   .vs span.x { color: var(--sumi-2); font-weight: 700; }
   .recent { margin-top: 26px; }
   .recent h2 { margin: 0 0 8px; font-size: 14px; color: var(--sumi-2); }
-  .recent a { display: flex; justify-content: space-between; gap: 10px; min-height: 48px; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--washi-2); color: inherit; text-decoration: none; font-weight: 700; margin-bottom: 6px; }
+  .recent a { display: flex; justify-content: space-between; gap: 10px; min-height: 48px; align-items: center; padding: 10px 14px; border-radius: 10px; background: var(--washi-2); color: inherit; text-decoration: none; font-weight: 700; margin-bottom: 6px; }
   .recent a span { font-size: 13px; color: var(--sumi-2); }
-  .fold { position: relative; padding: 18px 16px; border-radius: 18px; background: var(--wood); color: #26201C; box-shadow: var(--shadow); margin: 6px 0 14px; }
+  .fold { position: relative; padding: 18px 16px; border-radius: 22px; background: var(--wood); color: #26201C; box-shadow: var(--shadow); margin: 6px 0 14px; }
   .fold .to { font-weight: 900; }
   .fold textarea { background: #FCF4E4; border-color: #DCC497; color: #26201C; }
 
@@ -299,7 +302,7 @@
     .app.playing .status p { font-size: 15px; }
     .app.playing .acts { justify-content: flex-start; margin-top: 12px; }
     .app.playing .net { text-align: left; }
-    .aside-play:not([hidden]) { display: block; margin-top: 22px; padding: 18px 20px 20px; border-radius: 20px; background: var(--washi-2); }
+    .aside-play:not([hidden]) { display: block; margin-top: 22px; padding: 18px 20px 20px; border-radius: 22px; background: var(--washi-2); }
     .aside-play h2 { font-size: 19px; margin-bottom: 10px; }
     .aside-play .rules { grid-template-columns: 1fr 1fr; gap: 10px 18px; align-items: start; }
     .aside-play .rule { grid-template-columns: 46px 1fr; gap: 10px; align-items: start; }
@@ -313,7 +316,7 @@
   @keyframes up { from { transform: translateY(40px); opacity: 0; } }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
   @keyframes recv { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.05); } }
-  @keyframes tonew { 0% { box-shadow: inset 0 0 0 7px color-mix(in srgb, var(--mpc) 70%, transparent); } 100% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--mpc) 55%, transparent); } }
+  @keyframes tonew { 0% { box-shadow: inset 0 0 0 7px rgba(38,32,28,.5); } 100% { box-shadow: inset 0 0 0 3px rgba(38,32,28,.35); } }
   @keyframes nudge { 20% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 80% { transform: translateX(-2px); } }
   .status.nudge h2 { animation: nudge .26s ease-out; }
   @keyframes slam { 0% { transform: rotate(-24deg) scale(1.9); opacity: 0; } 60% { transform: rotate(-9deg) scale(.94); opacity: 1; } 100% { transform: rotate(-11deg) scale(1); } }
@@ -350,7 +353,7 @@
           <label class="f">Ty<input class="in" id="nameX" maxlength="16" required placeholder="tvoje jméno"></label>
           <label class="f">Soupeř<input class="in" id="nameO" maxlength="16" required placeholder="jméno soupeře"></label>
         </div>
-        <label class="f">O co hrajete <small>(nepovinné)</small>
+        <label class="f"><span class="lbl"><span>O co hrajete</span><small>nepovinné</small></span>
           <select class="in" id="stakeSel">
             <option value="">Bez sázky, jen pro radost</option>
             <option value="1">Kdo prohraje, platí kafe</option>
@@ -362,7 +365,7 @@
             <option value="c">Vlastní sázka…</option>
           </select>
         </label>
-        <label class="f" id="customWrap" hidden>Vlastní sázka <small id="customCount">0 / 40</small><input class="in" id="stakeCustom" maxlength="40" placeholder="např. kdo prohraje, peče bábovku"></label>
+        <label class="f" id="customWrap" hidden><span class="lbl"><span>Vlastní sázka</span><small id="customCount">0 / 40</small></span><input class="in" id="stakeCustom" maxlength="40" placeholder="např. kdo prohraje, peče bábovku"></label>
         <div class="f" role="group" aria-labelledby="starterLbl"><span id="starterLbl" style="font-weight:700;font-size:14px">Kdo začíná</span>
           <div class="seg" id="starterSeg"><button type="button" data-v="x" aria-pressed="false">Já</button><button type="button" data-v="o" aria-pressed="true">Soupeř</button></div>
         </div>
@@ -505,13 +508,14 @@
       `<circle cx="50" cy="55" r="22" fill="#F6D08A" ${st0}/>` + eyes(51, 8.5) + blush(60, 13) +
       `<path d="M45.5 57.5 Q50 55 54.5 57.5 Q50 63 45.5 57.5Z" fill="#7A3B2A"/><path d="M44 64.5 Q47 67.5 50 63.5 Q53 67.5 56 64.5" fill="none" ${st0} stroke-width="2.4"/>`,
     G: () =>
-      `<path d="M40 70 L38 99 L62 99 L60 70Z" fill="#F0BD4F" ${st0}/><circle cx="49" cy="88" r="3.4" fill="#C77A35"/>` +
-      `<path d="M41 27 L37 12 M59 27 L63 12" ${st0} stroke-width="3.4"/><circle cx="37" cy="11" r="5" fill="#9C5A2B" ${st0} stroke-width="2.6"/><circle cx="63" cy="11" r="5" fill="#9C5A2B" ${st0} stroke-width="2.6"/>` +
-      `<ellipse cx="25" cy="35" rx="10" ry="5" transform="rotate(-22 25 35)" fill="#F0BD4F" ${st0}/><ellipse cx="75" cy="35" rx="10" ry="5" transform="rotate(22 75 35)" fill="#F0BD4F" ${st0}/>` +
-      `<ellipse cx="50" cy="46" rx="20" ry="23" fill="#F0BD4F" ${st0}/>` +
-      `<path d="M38 31 q4 -3 7 0 q1 4 -3 5 q-5 0 -4 -5Z M57 34 q4 -2 6 1 q0 4 -4 4 q-3 -1 -2 -5Z M34 45 q3 -2 5 1 q-1 3 -4 3Z" fill="#C77A35"/>` +
-      eyes(46, 8) + `<ellipse cx="50" cy="65" rx="16" ry="11" fill="#F8DDA2" ${st0}/>` +
-      `<ellipse cx="44.5" cy="64" rx="2" ry="2.6" fill="${INK}"/><ellipse cx="55.5" cy="64" rx="2" ry="2.6" fill="${INK}"/>` + blush(55, 15),
+      `<path d="M42 56 L35 120 L65 120 L58 56Z" fill="#F0BD4F" ${st0}/>` +
+      `<ellipse cx="49" cy="84" rx="6.5" ry="8.5" transform="rotate(-8 49 84)" fill="#C77A35"/><ellipse cx="56" cy="104" rx="6" ry="7.5" transform="rotate(8 56 104)" fill="#C77A35"/>` +
+      `<path d="M43 24 L41 10 M57 24 L59 10" ${st0} stroke-width="3.4"/><circle cx="41" cy="9" r="4.8" fill="#9C5A2B" ${st0} stroke-width="2.6"/><circle cx="59" cy="9" r="4.8" fill="#9C5A2B" ${st0} stroke-width="2.6"/>` +
+      `<ellipse cx="27" cy="35" rx="9" ry="4.5" transform="rotate(-20 27 35)" fill="#F0BD4F" ${st0}/><ellipse cx="73" cy="35" rx="9" ry="4.5" transform="rotate(20 73 35)" fill="#F0BD4F" ${st0}/>` +
+      `<ellipse cx="50" cy="38" rx="19" ry="18" fill="#F0BD4F" ${st0}/>` +
+      `<ellipse cx="60" cy="27" rx="4.6" ry="3.6" transform="rotate(20 60 27)" fill="#C77A35"/><ellipse cx="38" cy="29" rx="4" ry="3.2" transform="rotate(-15 38 29)" fill="#C77A35"/>` +
+      eyes(35, 8) + `<ellipse cx="50" cy="50" rx="13" ry="9.5" fill="#F8DDA2" ${st0}/>` +
+      `<ellipse cx="45.5" cy="50" rx="1.8" ry="2.4" fill="${INK}"/><ellipse cx="54.5" cy="50" rx="1.8" ry="2.4" fill="${INK}"/>` + blush(42, 15),
     E: () =>
       `<ellipse cx="23" cy="47" rx="18" ry="22" fill="#B9C6D6" ${st0}/><ellipse cx="25" cy="48" rx="10" ry="14" fill="#E9B8C3"/>` +
       `<ellipse cx="77" cy="47" rx="18" ry="22" fill="#B9C6D6" ${st0}/><ellipse cx="75" cy="48" rx="10" ry="14" fill="#E9B8C3"/>` +
@@ -568,8 +572,8 @@
     <div class="rule">${pieceHTML("C", "x", true)}<p><b>Kuřátko</b> jde jen o jedno pole dopředu.</p></div>
     <div class="rule">${pieceHTML("H", "x", true)}<p><b>Slepice</b> vznikne, když kuřátko dojde na soupeřovu poslední řadu. Jde kamkoli kromě šikmo dozadu.</p></div>
     <ol>
-      <li>Tečky na okraji kamene ukazují, kam smí. Klepni na své zvířátko a deska ti ukáže volná pole.</li>
-      <li>Na soupeřovo zvířátko vstoupíš a sebereš ho. Přeběhne k tobě do zásoby.</li>
+      <li>Tečky na okraji kamene ukazují, kam smí. Klepni na své zvířátko a deska ti ukáže cílová pole tečkou. Poslední tah je na desce šedě: kroužek je odkud, tmavší pole kam.</li>
+      <li>Na soupeřovo zvířátko vstoupíš a sebereš ho, deska ho označí červeným rámečkem. Přeběhne k tobě do zásoby.</li>
       <li>Místo tahu můžeš zvířátko ze zásoby položit na kterékoli volné pole. Slepice se vrací jako kuřátko. Kuřátko položené rovnou na poslední řadu se nepromění a nehne, dokud ho někdo nesebere.</li>
       <li>Vyhráváš, když chytíš soupeřova lva, nebo když tvůj lev dojde na soupeřovu poslední řadu a soupeř ho tam nemůže hned sebrat.</li>
       <li>Když se stejná pozice objeví potřetí, je remíza.</li>
@@ -577,7 +581,7 @@
   $("rulesSheet").innerHTML = RULES();
   $("rulesAside").innerHTML = RULES();
   $("rulesPlay").innerHTML = RULES();
-  const castHTML = () => ["L", "G", "E", "C"].map((t, k) => `<figure>${pieceHTML(t, k % 2 ? "o" : "x", true)}<figcaption><b>${NAME[t][0].toUpperCase() + NAME[t].slice(1)}</b>${["kamkoli", "rovně", "šikmo", "dopředu"][k]}</figcaption></figure>`).join("");
+  const castHTML = (own = "x") => ["L", "G", "E", "C"].map((t, k) => `<figure>${pieceHTML(t, own, true)}<figcaption><b>${NAME[t][0].toUpperCase() + NAME[t].slice(1)}</b>${["kamkoli", "rovně", "šikmo", "dopředu"][k]}</figcaption></figure>`).join("");
   $("setupCast").innerHTML = castHTML();
   $("introCast").innerHTML = castHTML();
 
@@ -701,6 +705,7 @@
     const s = stake(st);
     $("introStakeBox").hidden = !s; if (s) $("introStake").textContent = s.text;
     $("introMine").textContent = `Tohle je moje hra, jsem ${nameOf(st, host)}`;
+    $("introCast").innerHTML = castHTML(seat);
     $("acceptBtn").disabled = busy;
     $("acceptBtn").textContent = busy ? "Přijímám…" : (turn() === seat && !st.m.length ? "Přijmout výzvu a začít" : "Přijmout výzvu");
   }
@@ -790,6 +795,7 @@
     board.textContent = "";
     board.classList.toggle("locked", !canPlay());
     board.style.setProperty("--opc", `var(--${other(p0) === "x" ? "ai" : "kaki"})`);
+    board.style.setProperty("--mine", `var(--${p0 === "x" ? "ai" : "kaki"})`);
     const last = game.last;
     if (last) board.style.setProperty("--mpc", `var(--${last.p === "x" ? "ai" : "kaki"})`);
     const winCell = last && game.result && game.result.w && (game.result.why === "lev" || game.result.why === "cil") ? last.to : -1;
@@ -854,17 +860,20 @@
     h.hidden = !r || view !== "play";
     if (!r) return;
     h.innerHTML = WHY[r.why].stamp;
-    // razítko sedne na prázdné pole nejdál od posledního tahu, aby nezakrylo, jak partie skončila
-    const p0 = persp(), to = game.last ? game.last.to : 5, [tr, tc] = S.rc(to);
-    let best = -1, bs = -1;
+    // razítko sedne na prázdné pole dost daleko od posledního tahu (a na úzkém displeji co nejníž, kam se stránka po konci doposune)
+    const p0 = persp(), to = game.last ? game.last.to : 5, [tr, tc] = S.rc(to), narrow = matchMedia("(max-width: 979px)").matches;
+    let best = -1, bs = -1e9;
     for (let i = 0; i < 12; i++) {
-      const [r2, c2] = S.rc(i), occ = game.s.b[i] ? 1 : 0;
-      const sc = Math.hypot(r2 - tr, c2 - tc) - occ * 10 - Math.abs(c2 - 1) * .2;
+      const [r2, c2] = S.rc(i), occ = game.s.b[i] ? 1 : 0, d = Math.hypot(r2 - tr, c2 - tc);
+      const v0 = p0 === "o" ? 11 - i : i, low = Math.floor(v0 / 3);
+      const sc = (d >= 1.2 ? 10 : 0) + d * .5 - occ * 30 - Math.abs(c2 - 1) * .3 + (narrow ? low * 1.5 : 0);
       if (sc > bs) { bs = sc; best = i; }
     }
     const v = p0 === "o" ? 11 - best : best;
-    h.style.setProperty("--hx", ((v % 3) + .5) / 3 * 100 + "%");
-    h.style.setProperty("--hy", (Math.floor(v / 3) + .5) / 4 * 100 + "%");
+    // střed razítka drží uvnitř rámu desky (poloměr 16 % šířky; deska je 133 % šířky vysoká)
+    const cx = Math.min(81, Math.max(19, ((v % 3) + .5) / 3 * 100)), cy = Math.min(87, Math.max(13, (Math.floor(v / 3) + .5) / 4 * 100));
+    h.style.setProperty("--hx", cx + "%");
+    h.style.setProperty("--hy", cy + "%");
   }
 
   function renderEnd() {
@@ -931,12 +940,12 @@
     return out;
   }
   // krátká stopa soupeřova tahu: čára z pole odkud na pole kam, pak zhasne
-  function trace(a, b, p, delay) {
+  function trace(a, b, delay) {
     const [x0, y0] = center(a), [x1, y1] = center(b), len = Math.hypot(x1 - x0, y1 - y0);
     const rot = `rotate(${Math.atan2(y1 - y0, x1 - x0)}rad)`;
     const el = document.createElement("div");
     el.className = "trace";
-    el.style.cssText = `left:${x0}px;top:${y0}px;width:${len}px;background:${p === "x" ? "var(--ai)" : "var(--kaki)"};opacity:0;transform:${rot} scaleX(0)`;
+    el.style.cssText = `left:${x0}px;top:${y0}px;width:${len}px;background:rgba(38,32,28,.5);opacity:0;transform:${rot} scaleX(0)`;
     $("fx").append(el);
     el.animate([{ transform: `${rot} scaleX(0)`, opacity: .55 }, { transform: `${rot} scaleX(1)`, opacity: .55, offset: .4 }, { transform: `${rot} scaleX(1)`, opacity: 0 }], { duration: 760, delay, easing: "ease-out", fill: "both" }).finished.then(() => el.remove(), () => el.remove());
   }
@@ -952,7 +961,7 @@
     const toCell = document.querySelector(`#board .cell[data-i="${info.to}"]`);
     let total = d + T_SLIDE;
     if (ext && toCell) toCell.classList.add("fresh");
-    if (ext && el && from) trace(from, el.getBoundingClientRect(), info.p, 0);
+    if (ext && el && from) trace(from, el.getBoundingClientRect(), 0);
     if (el && from) {
       const to = el.getBoundingClientRect();
       const dx = from.left - to.left, dy = from.top - to.top, sc = from.width / to.width;
@@ -1072,7 +1081,7 @@
       if (shot !== endBuzz.n || b.hidden || view !== "play") return;
       const over = b.getBoundingClientRect().bottom + 12 - innerHeight;
       if (over > 0) window.scrollBy({ top: over, behavior: "smooth" });
-    }, t + 1100);
+    }, t + 380);
   }
   endBuzz.n = 0;
 

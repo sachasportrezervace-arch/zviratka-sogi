@@ -78,9 +78,10 @@ const shot = (p, n) => p.screenshot({ path: path.join(OUT, n + ".png") });
       console.log(pre, "partie: figurka s cíli vybrána:", picked, "kameny v zásobách:", await p.locator("#game .tray .hp").count());
       await o.ctx.close();
     }
-    // 4) přeběhnutí uprostřed letu (animace zastavená v 650 ms od začátku, soupeřův tah)
-    if (!dark) {
-      const id = "rv" + pid + "bez";
+    // 4) přeběhnutí uprostřed letu (soupeřův tah, animace zastavené v daném čase od začátku):
+    //    04b = otočení v půlce (nová barva už vidět, kámen z boku), 04 = let k zásobě
+    {
+      const id = "rv" + pid + "bez" + (dark ? "d" : "l");
       const o = await mk(br, opt, id, doc(LIVE_A), "x");
       const p = o.page;
       await p.goto(URL + "#r." + id);
@@ -89,10 +90,14 @@ const shot = (p, n) => p.screenshot({ path: path.join(OUT, n + ".png") });
       o.put(doc(LIVE_B, {}, 6));
       await p.evaluate(() => window.dispatchEvent(new Event("focus")));
       await p.waitForSelector("#fx .ghost", { state: "attached", timeout: 8000 });
-      await p.waitForTimeout(420);                  // až se duch odkryje (úder v 350 ms), pak animace zastavíme uprostřed letu
-      await p.evaluate(() => { document.querySelectorAll("#fx .burst").forEach(e => e.remove()); document.getAnimations().forEach(a => { a.pause(); a.currentTime = 640; }); });
-      await p.waitForTimeout(150);
-      await shot(p, `${pre}-04-prebehnuti-uprostred`);
+      await p.waitForTimeout(420);                  // až se duch odkryje (úder v 350 ms), pak animace zastavíme
+      const at = async (ms, name) => {
+        await p.evaluate(t => { document.querySelectorAll("#fx .burst").forEach(e => e.remove()); document.getAnimations().forEach(a => { a.pause(); a.currentTime = t; }); }, ms);
+        await p.waitForTimeout(250);
+        await shot(p, name);
+      };
+      if (!dark) await at(540, `${pre}-04b-prebehnuti-otoceni`);
+      await at(dark ? 540 : 650, `${pre}-04-prebehnuti-uprostred`);
       await o.ctx.close();
     }
     // 5) konec s razítkem
@@ -106,23 +111,31 @@ const shot = (p, n) => p.screenshot({ path: path.join(OUT, n + ".png") });
       await shot(p, `${pre}-05-konec-razitko`);
       await o.ctx.close();
     }
-    // 5b) konec po dohrání naživo: na úzkém displeji se stránka doposune k výsledku a tlačítku odvety
+    // 5a/5b) konec po dohrání naživo. 5a: razítko zastavené uprostřed dopadu (jiný stav než statické 05),
+    //        5b: na úzkém displeji se stránka po razítku doposune k výsledku a tlačítku odvety
     if (pre === "m") {
-      const id = "rv" + pid + "kon2";
-      const o = await mk(br, opt, id, doc(END_LIVE), "x");
-      const p = o.page;
-      await p.goto(URL + "#r." + id);
-      await p.waitForSelector("#game:not([hidden])");
-      await p.waitForTimeout(500);
-      await p.locator('#board .cell[data-i="2"]').click();
-      await p.locator('#board .cell[data-i="1"]').click();
-      await p.waitForSelector("#endBox:not([hidden])", { timeout: 8000 });
-      await p.waitForTimeout(600);
-      await shot(p, `${pre}-05a-konec-razitko-po-tahu`);
-      await p.waitForTimeout(3500);
-      await shot(p, `${pre}-05b-konec-po-doposunuti`);
-      console.log(pre, "po doposunutí scrollY:", await p.evaluate(() => Math.round(scrollY)), "odveta v okně:", await p.evaluate(() => document.getElementById("endPrimary").getBoundingClientRect().bottom <= innerHeight));
-      await o.ctx.close();
+      for (const [k, stop] of [["a", true], ["b", false]]) {
+        const id = "rv" + pid + "kon2" + k;
+        const o = await mk(br, opt, id, doc(END_LIVE), "x");
+        const p = o.page;
+        if (stop) await p.addInitScript(() => { window.scrollBy = () => {}; });
+        await p.goto(URL + "#r." + id);
+        await p.waitForSelector("#game:not([hidden])");
+        await p.waitForTimeout(500);
+        await p.locator('#board .cell[data-i="2"]').click();
+        await p.locator('#board .cell[data-i="1"]').click();
+        await p.waitForSelector("#endBox:not([hidden])", { timeout: 8000 });
+        if (stop) {
+          await p.evaluate(() => { const an = document.getElementById("hanko").getAnimations()[0]; an.pause(); an.currentTime = an.effect.getTiming().delay + 170; });
+          await p.waitForTimeout(250);
+          await shot(p, `${pre}-05a-razitko-dopad`);
+        } else {
+          await p.waitForTimeout(3500);
+          await shot(p, `${pre}-05b-konec-po-doposunuti`);
+          console.log(pre, "po doposunutí scrollY:", await p.evaluate(() => Math.round(scrollY)), "odveta v okně:", await p.evaluate(() => document.getElementById("endPrimary").getBoundingClientRect().bottom <= innerHeight));
+        }
+        await o.ctx.close();
+      }
     }
   }
   await bA.close(); await bB.close();

@@ -1,5 +1,10 @@
 # Deník – Zvířátkové šógi
 
+## 2026-10-31 · Claude (kolo 2 po kritice design-eye)
+- Hotovo lokálně, **nenasazeno a nepushnuto**: poslední tah neutrálně šedý (červená jen pro „sebereš“, razítko, výhru), výběr výrazný ve světlém i tmavém režimu bez závislosti na barvě strany, cílové tečky v barvě mé strany, razítko 32 % šířky uvnitř rámu desky a mimo vítězný tah, nadpisy s word-spacing, úvodní kameny v barvě mé strany, přepínač „Kdo začíná“ plný, „nepovinné“ na řádku s popiskem, zaoblení 10/14/22, nová žirafa, pás `.seat.on` z barvy hráče, focus polí uvnitř.
+- Testy: engine 10, dva prohlížeče 33, desktop+iPhone 143, pocit 29. Jednou spadl desktop-iphone na časový limit při souběžném běhu s ostatními testy, samostatně opakovaně zelený.
+- Neověřeno: skutečný iPhone; na žirafě se směrové tečky v malé zásobě částečně kryjí s růžky a krkem.
+
 ## 2026-10-31 · Claude (pocit ze hry, bez dekorací)
 - Hotovo lokálně, **nenasazeno a nepushnuto** (čeká na nezávislou kritiku designu): přeběhnutí zkráceno z ~1250 na ~700 ms u toho, kdo táhne (soupeř vidí ~940 ms včetně 240 ms „nádechu“), oblouková dráha, otočení a změna barvy na místě, úder jako jeden kroužek, dopad do zásoby s kroužkem a počitadlem; stejná zvířátka v zásobě jsou jeden kámen s číslem; stopa soupeřova tahu (čára odkud–kam, rámeček cíle, text „Radka: slon z C4 na B3, bere kuřátko.“); výběr figurky a cíle se mění na místě, takže naběhnou hned i uprostřed animace (dřív až po ní); proměna ukáže kuřátko a uprostřed otočení slepici; razítko sedne na prázdné pole nejdál od posledního tahu a vítězná figurka má červený rámeček; výsledek se ukáže až po dohrání tahu, na úzkém displeji se stránka po razítku doposune k tlačítku odvety.
 - Odstraněno jako dekorace: radiální gradienty pozadí, „dýchající“ kroužek na kotouči hráče, houpání zvířátek na úvodních obrazovkách, okvětní lístky při proměně, paprsky při sebrání, gradient cílové řady, „×“ jako oddělovač (teď „proti“).
