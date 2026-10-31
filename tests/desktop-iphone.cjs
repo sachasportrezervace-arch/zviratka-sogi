@@ -244,8 +244,13 @@ async function mockPage(ctx, init) {
   check("série 1 : 0", (await text(A, "#tSer")).includes("Mark 1 : 0 Radka"));
   check("chycený lev je v Markově zásobě", await A.locator('#seatBot .tray [data-id="1"]').count() === 1);
   {
+    // Změna chování: na úzkém displeji se stránka po razítku sama doposune, aby byl vidět výsledek a tlačítko odvety
+    // (deska se pak částečně posune nahoru), na desktopu zůstává vše na místě.
+    await B.waitForTimeout(1500);
     const a = await measure(A), b = await measure(B);
-    check("konec partie: deska a obě zásoby zůstávají vidět (desktop i iPhone)", a.bot.bottom <= a.ih && b.bot.bottom <= b.ih && a.sw <= a.iw && b.sw <= b.iw, `desktop ${a.bot.bottom}/${a.ih}, iPhone ${b.bot.bottom}/${b.ih}`);
+    const btn = p => p.evaluate(() => { const r = document.getElementById("endPrimary").getBoundingClientRect(); return { bottom: Math.round(r.bottom), top: Math.round(r.top), ih: innerHeight }; });
+    const ba = await btn(A), bb = await btn(B);
+    check("konec partie: desktop má vše na místě a tlačítko odvety vidět, na iPhonu je po razítku vidět výsledek a tlačítko odvety", a.bot.bottom <= a.ih && a.scrollY === 0 && ba.bottom <= ba.ih && bb.top >= 0 && bb.bottom <= bb.ih && a.sw <= a.iw && b.sw <= b.iw, `desktop odveta ${ba.top}–${ba.bottom}/${ba.ih}, iPhone odveta ${bb.top}–${bb.bottom}/${bb.ih}, scrollY ${b.scrollY}`);
   }
 
   // 5) ODVETA: Radka (poražená) chce odvetu, začíná ona

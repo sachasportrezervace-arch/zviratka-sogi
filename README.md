@@ -19,6 +19,10 @@ Architektura a synchronizace převzaté z Psaníčka: statická stránka na GitH
   tmavý režim (snímky všech obrazovek + kontrola kontrastu textů) a chyby JavaScriptu: `node tests/desktop-iphone.cjs [URL]`.
   Rozvržení a tmavý režim běží nad falešnou sítí (route na mantledb.sh), partie nad skutečnou. Snímky jdou do `tests/shots` (proměnná `SHOTS`).
 - `tests/kontrast.cjs` – pomocná kontrola kontrastu textů pro předchozí test.
+- `tests/pocit.cjs` – pocit ze hry (29 kontrol, Chromium desktop + WebKit iPhone 13, falešná síť): výběr a cíle naběhnou hned i uprostřed animace soupeřova tahu,
+  délka přeběhnutí, text a značky posledního tahu, počitadlo stejných zvířátek v zásobě, razítko mimo vítěznou figurku, žádná nekonečná animace, reduced motion.
+  `node tests/pocit.cjs [URL]`
+- `tests/render-review.cjs` – finální rendery pro kritiku designu do `tests/shots/review/` (desktop 1280×800, iPhone 13, tmavý režim mobilu): `node tests/render-review.cjs [URL]`
 - `manifest.webmanifest`, `icons/` – aplikace na plochu. Ikony (lev na dřevěném kameni s indigovým okrajem) se generují z kresby lva:
   `node tools/make-icons.cjs` (Playwright vyrenderuje `icons/icon.svg` do PNG 192, 512 a 180 pro `apple-touch-icon`).
 

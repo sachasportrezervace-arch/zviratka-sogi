@@ -50,10 +50,6 @@
   body {
     margin: 0; min-height: 100dvh; background: var(--washi); color: var(--sumi);
     font: 500 16px/1.45 var(--ui); -webkit-tap-highlight-color: transparent;
-    background-image: radial-gradient(circle at 20% 10%, rgba(255,255,255,.35), transparent 40%), radial-gradient(circle at 90% 80%, rgba(201,80,42,.06), transparent 45%);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) body { background-image: radial-gradient(circle at 20% 8%, rgba(242,233,219,.045), transparent 42%), radial-gradient(circle at 90% 85%, rgba(240,138,99,.05), transparent 45%); }
   }
   ::selection { background: var(--sakura); color: #26201C; }
   :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 10px; }
@@ -109,15 +105,15 @@
 
   /* ---------- seats & trays ---------- */
   .seat { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 16px; transition: background .3s; }
-  .seat.on { background: color-mix(in srgb, var(--pc) 13%, transparent); }
+  .seat.on { background: color-mix(in srgb, var(--pc) 15%, transparent); }
   .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .disc { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--pc); color: #fff; font: 400 15px/1 var(--display); flex: none; position: relative; }
-  .seat.on .disc::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--pt); animation: breathe 1.8s ease-in-out infinite; }
+  .seat.on .disc { box-shadow: 0 0 0 2px var(--washi), 0 0 0 4.5px var(--pt); }
   .who .nm { font-weight: 900; font-size: 15px; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .who .tag { display: block; font-weight: 700; font-size: 12px; color: var(--sumi-2); }
   .seat.on .who .tag { color: var(--pt); }
   .tray {
-    display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-height: 52px; padding: 4px 6px; border-radius: 12px;
+    position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-height: 52px; padding: 4px 6px; border-radius: 12px;
     background: linear-gradient(180deg, var(--wood-2), #E6CB98); box-shadow: inset 0 2px 4px rgba(90,60,20,.25);
   }
   .tray .empty { font-size: 12px; font-weight: 700; color: #65502F; padding: 0 6px; }
@@ -126,7 +122,12 @@
   .hp.sel .pc { transform: translateY(-5px); }
   .hp.sel .tile { box-shadow: 0 0 0 3px var(--sumi), 0 8px 14px -4px rgba(60,40,20,.45); }
   .hp .pc { width: 100%; height: 100%; transition: transform .2s var(--ease); }
-  .hp.dim { opacity: .55; }
+  .hp:not(:disabled):active .pc { transform: scale(.92); }
+  .hp.sel:not(:disabled):active .pc { transform: translateY(-3px) scale(.95); }
+  .hp[data-n="2"]::before { content: ""; position: absolute; inset: 0; transform: translate(5px, -4px); border-radius: 19%; background: var(--wood-2); border: 2px solid var(--pc); box-shadow: var(--shadow); }
+  .hp .cnt { position: absolute; right: -6px; top: -7px; z-index: 2; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: var(--sumi); color: var(--washi); font: 900 12px/19px var(--ui); text-align: center; pointer-events: none; }
+  .hp.got .tile { box-shadow: 0 0 0 3px var(--pc), var(--shadow); }
+  .tray.recv::after { content: ""; position: absolute; inset: 0; border-radius: 12px; box-shadow: 0 0 0 3px var(--pc); pointer-events: none; animation: recv .5s var(--ease) both; }
   .trayrow { display: grid; grid-template-columns: minmax(0, auto) 1fr; gap: 8px; align-items: center; }
 
   /* ---------- board ---------- */
@@ -150,18 +151,26 @@
   .cell::before { content: ""; position: absolute; inset: 0; border-right: 1.5px solid var(--tatami-line); border-bottom: 1.5px solid var(--tatami-line); pointer-events: none; }
   .cell:nth-child(3n)::before { border-right: 0; }
   .cell:nth-last-child(-n+3)::before { border-bottom: 0; }
-  .cell.goal-them::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
-  .cell.goal-them::after { background: linear-gradient(180deg, color-mix(in srgb, var(--opc) 16%, transparent), transparent 80%); }
-  .cell.from::after { content: ""; position: absolute; inset: 22%; border-radius: 50%; border: 2px dashed color-mix(in srgb, var(--mpc) 70%, transparent); }
-  .cell.to { background: color-mix(in srgb, var(--mpc) 18%, transparent); }
+  .cell.goal-them::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: color-mix(in srgb, var(--opc) 12%, transparent); }
+  .cell.from::after { content: ""; position: absolute; inset: 22%; border-radius: 50%; border: 3px dashed color-mix(in srgb, var(--mpc) 85%, transparent); }
+  .cell.to { background: color-mix(in srgb, var(--mpc) 18%, transparent); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--mpc) 55%, transparent); }
+  .cell.to.fresh { animation: tonew .55s var(--ease) both; }
   .cell .pc { width: 86%; height: 86%; }
-  .cell.target .mark { position: absolute; width: 26%; height: 26%; border-radius: 50%; background: color-mix(in srgb, var(--sumi) 30%, transparent); pointer-events: none; animation: pop .22s var(--ease) both; }
-  :root:not([data-theme="light"]) .cell.target .mark { background: rgba(38,32,28,.32); }
+  .cell .pc.victim { position: absolute; left: 7%; top: 7%; }
+  .cell.target { background: color-mix(in srgb, var(--sumi) 5%, transparent); }
+  .cell.target .mark { position: absolute; width: 25%; height: 25%; border-radius: 50%; background: rgba(38,32,28,.36); pointer-events: none; animation: pop .22s var(--ease) both; transition: transform .15s var(--ease); }
+  .cell.target.cap { background: color-mix(in srgb, var(--hanko) 14%, transparent); }
   .cell.target.cap .mark { width: 94%; height: 94%; border-radius: 18%; background: transparent; border: 4px solid var(--hanko); }
   .cell.sel .pc { transform: translateY(-6px); }
   .cell.sel .tile { box-shadow: 0 0 0 3px var(--sumi), 0 12px 18px -6px rgba(60,40,20,.5); }
+  .cell.win .tile { box-shadow: 0 0 0 3px var(--hanko), var(--shadow); }
   .cell .pc { transition: transform .2s var(--ease); }
+  .cell:active .pc { transform: scale(.95); }
+  .cell.sel:active .pc { transform: translateY(-3px) scale(.96); }
+  .cell.target:active .mark { transform: scale(1.3); }
+  .board:not(.locked) .cell, .hp:not(:disabled) { cursor: pointer; }
   .board.locked .cell { cursor: default; }
+  @media (hover: hover) { .cell.target:hover { background: color-mix(in srgb, var(--sumi) 13%, transparent); } .cell.target.cap:hover { background: color-mix(in srgb, var(--hanko) 24%, transparent); } }
 
   /* ---------- pieces ---------- */
   .pc { position: relative; display: block; pointer-events: none; }
@@ -190,22 +199,24 @@
 
   /* ---------- end ---------- */
   .hanko {
-    position: absolute; z-index: 5; left: 50%; top: 50%; width: 46%; aspect-ratio: 1; margin: -23% 0 0 -23%; border-radius: 50%;
-    display: grid; place-items: center; text-align: center; color: var(--hanko); border: 5px solid var(--hanko); background: rgba(250,240,225,.82);
-    font: 400 7.2cqw/1.05 var(--display); transform: rotate(-11deg); pointer-events: none;
-    box-shadow: inset 0 0 0 4px rgba(250,240,225,.82), inset 0 0 0 7px var(--hanko);
+    position: absolute; z-index: 5; left: var(--hx, 50%); top: var(--hy, 50%); width: 38%; aspect-ratio: 1; margin: -19% 0 0 -19%; border-radius: 50%;
+    display: grid; place-items: center; text-align: center; color: var(--hanko); border: 4px solid var(--hanko); background: rgba(250,240,225,.9);
+    font: 400 4.7cqw/1.08 var(--display); letter-spacing: -.01em; transform: rotate(-11deg); pointer-events: none;
+    box-shadow: inset 0 0 0 3px rgba(250,240,225,.9), inset 0 0 0 5.5px var(--hanko);
   }
   .hanko.slam { animation: slam .42s var(--ease) both; }
-  .result { margin-top: 8px; padding: 16px; border-radius: 18px; background: var(--washi-2); text-align: center; }
-  .result h2 { margin: 0; font: 400 24px/1.12 var(--display); text-wrap: balance; }
-  .result .l2 { margin: 6px 0 0; font-weight: 900; font-size: 17px; }
+  .result { margin-top: 6px; padding: 14px 16px; border-radius: 18px; background: var(--washi-2); text-align: center; }
+  .result h2 { margin: 0; font: 400 22px/1.12 var(--display); text-wrap: balance; }
+  .result .l2 { margin: 4px 0 0; font-weight: 900; font-size: 17px; }
   .result .l2.win { color: var(--kaki-t); }
   .result .meta { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: var(--sumi-2); }
-  .ticket { margin: 12px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--washi); border: 2px dashed var(--line); text-align: left; }
+  .ticket { margin: 10px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--washi); border: 2px dashed var(--line); text-align: left; }
   .ticket small { display: block; font-weight: 700; font-size: 12px; color: var(--sumi-2); letter-spacing: .04em; }
   .ticket b { display: block; font-size: 16px; }
   .ticket .ser { margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--sumi-2); font-variant-numeric: tabular-nums; }
-  .result .stack { margin-top: 12px; }
+  .result .stack { margin-top: 10px; }
+  .result:not([hidden]) { animation: rise .3s var(--ease) both; }
+  .result .btn.quiet { margin-top: 2px; width: 100%; }
 
   /* ---------- intro / setup / share / info ---------- */
   .page { padding-top: 10px; }
@@ -217,10 +228,6 @@
   .cast .pc { width: 100%; aspect-ratio: 1; }
   .cast figcaption { margin-top: 6px; font-size: 12px; font-weight: 700; line-height: 1.25; color: var(--sumi-2); }
   .cast figcaption b { display: block; font-size: 14px; color: var(--sumi); }
-  .cast.bob .pc { animation: bob 2.6s ease-in-out infinite; }
-  .cast.bob figure:nth-child(2) .pc { animation-delay: -.6s; }
-  .cast.bob figure:nth-child(3) .pc { animation-delay: -1.2s; }
-  .cast.bob figure:nth-child(4) .pc { animation-delay: -1.8s; }
   .card { padding: 16px; border-radius: 18px; background: var(--washi-2); margin-bottom: 14px; }
   .card small { display: block; font-weight: 700; font-size: 12px; letter-spacing: .04em; color: var(--sumi-2); }
   .card b { display: block; font-size: 18px; line-height: 1.3; }
@@ -262,6 +269,8 @@
   .ghost .face.back { transform: rotateY(180deg); }
   .ghost .pc { width: 100%; height: 100%; }
   .burst { position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; overflow: visible; }
+  .trace { position: fixed; height: 4px; margin-top: -2px; border-radius: 2px; transform-origin: 0 50%; }
+  .trace::after { content: ""; position: absolute; right: -4px; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: inherit; }
 
   /* ---------- plocha, instalace ---------- */
   .join { margin: 0 0 14px; display: grid; gap: 10px; }
@@ -300,10 +309,13 @@
     :root { --bw: max(240px, min(540px, calc((100dvh - 232px) * .75))); }
   }
 
-  @keyframes breathe { 50% { transform: scale(1.12); opacity: .35; } }
   @keyframes pop { from { transform: scale(.6); opacity: 0; } }
   @keyframes up { from { transform: translateY(40px); opacity: 0; } }
-  @keyframes bob { 50% { transform: translateY(-5px) rotate(-2deg); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  @keyframes recv { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.05); } }
+  @keyframes tonew { 0% { box-shadow: inset 0 0 0 7px color-mix(in srgb, var(--mpc) 70%, transparent); } 100% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--mpc) 55%, transparent); } }
+  @keyframes nudge { 20% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 80% { transform: translateX(-2px); } }
+  .status.nudge h2 { animation: nudge .26s ease-out; }
   @keyframes slam { 0% { transform: rotate(-24deg) scale(1.9); opacity: 0; } 60% { transform: rotate(-9deg) scale(.94); opacity: 1; } 100% { transform: rotate(-11deg) scale(1); } }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -328,7 +340,7 @@
     <section id="setup" class="page" hidden>
       <h1>Kdo dřív chytí <em>lva</em>?</h1>
       <p class="lede">Malá japonská hra pro dva na desce 3 × 4. Založ hru, pošli odkaz a hrajte každý na svém telefonu.</p>
-      <div class="cast bob" id="setupCast" aria-hidden="true"></div>
+      <div class="cast" id="setupCast" aria-hidden="true"></div>
       <form id="joinForm" class="card join" autocomplete="off" hidden>
         <label class="f" for="joinLink">Vlož odkaz na hru<small>Hru, kterou jsi dostal(a) v chatu. Stačí celý odkaz nebo jeho konec začínající #r.</small></label>
         <div class="joinrow"><input class="in" id="joinLink" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://…/#r.abc123"><button class="btn primary" id="joinBtn" type="submit">Otevřít hru</button></div>
@@ -371,7 +383,7 @@
       <div class="vs" id="introVs"></div>
       <h1 id="introTitle"></h1>
       <p class="lede">Chyť soupeřova lva, nebo s tím svým doběhni do cíle. Každé zvířátko jde o jedno pole, sebrané zvíře přeběhne k tobě.</p>
-      <div class="cast bob" id="introCast" aria-hidden="true"></div>
+      <div class="cast" id="introCast" aria-hidden="true"></div>
       <div class="card" id="introStakeBox" hidden><small>O co se hraje</small><b id="introStake"></b></div>
       <div class="stack">
         <button class="btn primary" id="acceptBtn" type="button">Přijmout výzvu</button>
@@ -401,12 +413,10 @@
       <div id="endBox" class="result" hidden>
         <h2 id="endL1"></h2>
         <p class="l2" id="endL2"></p>
-        <p class="meta" id="endMeta"></p>
+        <div class="stack"><button class="btn primary" id="endPrimary" type="button">Odveta</button></div>
         <div class="ticket"><small id="tLabel">Sázka</small><b id="tRes"></b><div class="ser" id="tSer"></div></div>
-        <div class="stack">
-          <button class="btn primary" id="endPrimary" type="button">Odveta</button>
-          <button class="btn" id="endSecondary" type="button">Zkopírovat odkaz na hru</button>
-        </div>
+        <p class="meta" id="endMeta"></p>
+        <button class="btn quiet" id="endSecondary" type="button">Zkopírovat odkaz na hru</button>
       </div>
       <div class="acts claims" id="claims" hidden>
         <p id="claimHint">Hraješ tuhle hru z jiného zařízení?</p>
@@ -618,7 +628,7 @@
   let me = null;      // "x" | "o" | null = přihlížíš
   let view = "setup", shareKind = "new";
   let sel = null;     // vybraná figurka: { k: "m", f } nebo { k: "d", t }
-  let busy = false, net = "", bootSeq = 0, starter = "o";
+  let busy = false, busySince = 0, net = "", bootSeq = 0, starter = "o";
   let animUntil = 0;  // do té doby běží animace tahu a deska se nepřekresluje
 
   const nameOf = (g, p) => p === "x" ? g.x : g.o;
@@ -630,7 +640,7 @@
   const freeSeat = () => !room ? null : !room.sx ? "x" : !room.so ? "o" : null;
   const setGame = g => { st = g; game = S.play(g); };
   const tahu = n => n === 1 ? "tah" : n >= 2 && n <= 4 ? "tahy" : "tahů";
-  const buzz = () => attempt(() => navigator.vibrate && navigator.vibrate(12));
+  const buzz = (p = 12) => attempt(() => navigator.vibrate && navigator.vibrate(p));
   function seriesAfter() { const w = [...st.w], r = game.result; if (r && r.w) w[r.w === "x" ? 0 : 1]++; return w; }
   const cellName = i => { const [r, c] = S.rc(i); return "ABC"[c] + (4 - r); };
   const say = t => { $("say").textContent = ""; requestAnimationFrame(() => $("say").textContent = t); };
@@ -685,7 +695,7 @@
     const seat = freeSeat() || "o", host = other(seat);
     const vs = $("introVs"); vs.innerHTML = "";
     const mk = p => { const s = document.createElement("span"); s.style.display = "flex"; s.style.alignItems = "center"; s.style.gap = "8px"; s.innerHTML = discHTML(p, nameOf(st, p)); const b = document.createElement("span"); b.textContent = nameOf(st, p); s.append(b); return s; };
-    const sep = document.createElement("span"); sep.className = "x"; sep.textContent = "×";
+    const sep = document.createElement("span"); sep.className = "x"; sep.textContent = "proti";
     vs.append(mk(host), sep, mk(seat));
     $("introTitle").textContent = `${nameOf(st, host)} tě vyzývá na Zvířátkové šógi.`;
     const s = stake(st);
@@ -703,7 +713,8 @@
 
   function renderGame() {
     const isEnd = ended();
-    $("playBox").hidden = isEnd; $("endBox").hidden = !isEnd;
+    // výsledek se ukáže až po dohrání tahu, ať text nevyzradí konec dřív, než ho deska ukáže
+    $("playBox").hidden = isEnd; $("endBox").hidden = !isEnd || Date.now() < animUntil;
     $("net").textContent = net; $("net").hidden = !net;
     if (isEnd) renderEnd(); else renderStatus();
     // přihlížející (i do skončené partie) si může hru převzít, třeba v aplikaci z plochy s prázdným úložištěm
@@ -725,29 +736,53 @@
 
   function fillTray(tray, p) {
     tray.textContent = "";
-    const hand = game.s.h[p].slice();
+    const hand = game.s.h[p];
     // chycený lev se vystaví v zásobě vítěze
     const trophy = game.result && game.result.why === "lev" && game.result.w === p ? game.last.captured : null;
     if (!hand.length && !trophy) { const e = document.createElement("span"); e.className = "empty"; e.textContent = "zásoba je prázdná"; tray.append(e); return; }
-    const order = { G: 0, E: 1, C: 2 };
-    hand.sort((a, b) => order[a.t] - order[b.t]);
     const mineToDrop = canPlay() && p === me;
-    hand.forEach(c => {
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "hp"; b.dataset.t = c.t;
-      b.innerHTML = pieceHTML(c.t, p, p === persp(), c.id);
-      b.setAttribute("aria-label", `${NAME[c.t]} v zásobě` + (mineToDrop ? ", klepni a polož ho na volné pole" : ""));
+    // stejná zvířátka se skládají do jednoho kamene s počitadlem
+    const gain = game.last && game.last.captured && game.last.captured.t !== "L" && game.last.p === p ? (game.last.captured.t === "H" ? "C" : game.last.captured.t) : null;
+    for (const t of ["G", "E", "C"]) {
+      const same = hand.filter(c => c.t === t);
+      if (!same.length) continue;
+      const n = same.length, b = document.createElement("button");
+      b.type = "button"; b.className = "hp" + (t === gain ? " got" : ""); b.dataset.t = t; b.dataset.n = n;
+      b.innerHTML = pieceHTML(t, p, p === persp(), same[0].id) + (n > 1 ? `<span class="cnt" aria-hidden="true">${n}</span>` : "");
+      b.setAttribute("aria-label", `${NAME[t]} v zásobě` + (n > 1 ? `, ${n} kusy` : "") + (mineToDrop ? ", klepni a polož ho na volné pole" : ""));
       b.disabled = !mineToDrop;
-      if (sel && sel.k === "d" && sel.t === c.t && mineToDrop) b.classList.add("sel");
-      b.addEventListener("click", () => pickDrop(c.t));
+      if (sel && sel.k === "d" && sel.t === t && mineToDrop) b.classList.add("sel");
+      b.addEventListener("click", () => pickDrop(t));
       tray.append(b);
-    });
+    }
     if (trophy) { const s = document.createElement("span"); s.className = "hp"; s.innerHTML = pieceHTML("L", p, p === persp(), trophy.id); s.setAttribute("aria-label", "chycený lev"); tray.append(s); }
   }
 
   function targets() {
     if (!sel || !canPlay()) return [];
     return S.moves(game.s, me).filter(m => m.k === sel.k && (m.k === "m" ? m.f === sel.f : m.t === sel.t));
+  }
+
+  function cellLabel(i, isTarget) {
+    const pc = game.s.b[i];
+    let label = cellName(i) + ", " + (pc ? `${pc.p === me ? "tvoje" : me ? "soupeřova" : nameOf(st, pc.p) + ":"} ${NAME[pc.t]}` : "prázdné");
+    if (isTarget) label += pc ? ", můžeš sebrat" : ", sem můžeš táhnout";
+    return label;
+  }
+  // výběr figurky se mění na místě (bez překreslení desky), takže zvednutí a cíle naběhnou hned i uprostřed animace
+  function refreshSel() {
+    const tg = targets();
+    document.querySelectorAll("#board .cell").forEach(b => {
+      const i = +b.dataset.i, pc = game.s.b[i], t = !!tg.find(m => m.to === i);
+      b.classList.toggle("target", t); b.classList.toggle("cap", t && !!pc);
+      b.classList.toggle("sel", !!(sel && sel.k === "m" && sel.f === i));
+      const mk = b.querySelector(".mark");
+      if (t && !mk) b.insertAdjacentHTML("afterbegin", '<span class="mark"></span>');
+      if (!t && mk) mk.remove();
+      b.setAttribute("aria-label", cellLabel(i, t));
+    });
+    document.querySelectorAll("#game .tray .hp[data-t]").forEach(b => b.classList.toggle("sel", !!(sel && sel.k === "d" && sel.t === b.dataset.t && canPlay() && b.closest(".tray").dataset.tray === me)));
+    renderStatus();
   }
 
   function drawBoard() {
@@ -757,6 +792,7 @@
     board.style.setProperty("--opc", `var(--${other(p0) === "x" ? "ai" : "kaki"})`);
     const last = game.last;
     if (last) board.style.setProperty("--mpc", `var(--${last.p === "x" ? "ai" : "kaki"})`);
+    const winCell = last && game.result && game.result.w && (game.result.why === "lev" || game.result.why === "cil") ? last.to : -1;
     for (let v = 0; v < 12; v++) {
       const i = p0 === "o" ? 11 - v : v, pc = s.b[i];
       const b = document.createElement("button");
@@ -768,10 +804,9 @@
       const t = tg.find(m => m.to === i);
       if (t) { b.classList.add("target"); if (pc) b.classList.add("cap"); b.insertAdjacentHTML("beforeend", '<span class="mark"></span>'); }
       if (sel && sel.k === "m" && sel.f === i) b.classList.add("sel");
+      if (winCell === i) b.classList.add("win");
       if (pc) b.insertAdjacentHTML("beforeend", pieceHTML(pc.t, pc.p, pc.p === p0, pc.id));
-      let label = cellName(i) + ", " + (pc ? `${pc.p === me ? "tvoje" : me ? "soupeřova" : nameOf(st, pc.p) + ":"} ${NAME[pc.t]}` : "prázdné");
-      if (t) label += pc ? ", můžeš sebrat" : ", sem můžeš táhnout";
-      b.setAttribute("aria-label", label);
+      b.setAttribute("aria-label", cellLabel(i, !!t));
       b.addEventListener("click", () => tapCell(i));
       board.append(b);
     }
@@ -782,11 +817,11 @@
     let h, sub = "";
     if (!me) {
       h = `Na tahu: ${nameOf(st, t)}.`; sub = "Přihlížíš, hrají jen dva. Hraješ tuhle hru z jiného zařízení?";
-    } else if (busy) { h = "Zapisuju tah…"; }
+    } else if (busy && Date.now() - busySince > 900) { h = "Zapisuju tah…"; }
     else if (t === me) {
       h = !st.m.some((_, k) => (k % 2 === 0 ? st.s : other(st.s)) === me) && !st.m.length ? "Začínáš. Klepni na své zvířátko." : "Jsi na tahu.";
-      if (sel) sub = sel.k === "d" ? `Polož ${ACC[sel.t]} na kterékoli volné pole.` : "Vyber pole s tečkou. Červený rámeček = sebereš.";
-      else sub = game.s.h[me].length ? "Táhni zvířátkem, nebo polož něco ze zásoby." : "Tečky na kameni ukazují, kam zvířátko smí.";
+      if (sel) sub = sel.k === "d" ? `Polož ${ACC[sel.t]} na kterékoli volné pole.` : !targets().length ? "Tohle zvířátko se teď nemůže hýbat. Zkus jiné." : "Vyber pole s tečkou. Červený rámeček = sebereš.";
+      else sub = oppMoveText() || (game.s.h[me].length ? "Táhni zvířátkem, nebo polož něco ze zásoby." : "Tečky na kameni ukazují, kam zvířátko smí.");
       if (game.count === 2) sub = "Pozor: tahle pozice už tu jednou byla. Potřetí je remíza.";
     } else if (freeSeat() === opp) { h = "Odkaz ještě nikdo neotevřel."; sub = "Pošli ho do chatu. Jakmile soupeř přijme výzvu, uvidíš to tady."; }
     else { h = `${nameOf(st, opp)} přemýšlí…`; sub = "Tah se tu objeví sám. Stránku můžeš klidně zavřít."; }
@@ -794,6 +829,17 @@
     $("sub").textContent = sub; $("sub").hidden = !sub;
     $("undoBtn").hidden = !lastIsMine() || busy;
     $("waitCopy").hidden = !me || t === me || freeSeat() !== opp;
+  }
+
+  // co soupeř naposled udělal (viditelný text, ne jen hlášení pro čtečku)
+  function oppMoveText() {
+    const l = game && game.last;
+    if (!l || !me || l.p === me) return "";
+    const nm = nameOf(st, l.p), t = NAME[l.promoted ? "C" : l.piece.t];
+    let x = l.dropped ? `${nm}: ${t} ze zásoby na ${cellName(l.to)}` : `${nm}: ${t} z ${cellName(l.from)} na ${cellName(l.to)}`;
+    if (l.captured) x += `, bere ${ACC[l.captured.t]}`;
+    if (l.promoted) x += ", kuřátko je teď slepice";
+    return x + ".";
   }
 
   const WHY = {
@@ -808,6 +854,17 @@
     h.hidden = !r || view !== "play";
     if (!r) return;
     h.innerHTML = WHY[r.why].stamp;
+    // razítko sedne na prázdné pole nejdál od posledního tahu, aby nezakrylo, jak partie skončila
+    const p0 = persp(), to = game.last ? game.last.to : 5, [tr, tc] = S.rc(to);
+    let best = -1, bs = -1;
+    for (let i = 0; i < 12; i++) {
+      const [r2, c2] = S.rc(i), occ = game.s.b[i] ? 1 : 0;
+      const sc = Math.hypot(r2 - tr, c2 - tc) - occ * 10 - Math.abs(c2 - 1) * .2;
+      if (sc > bs) { bs = sc; best = i; }
+    }
+    const v = p0 === "o" ? 11 - best : best;
+    h.style.setProperty("--hx", ((v % 3) + .5) / 3 * 100 + "%");
+    h.style.setProperty("--hy", (Math.floor(v / 3) + .5) / 4 * 100 + "%");
   }
 
   function renderEnd() {
@@ -849,99 +906,125 @@
   }
 
   // ---------- choreografie tahu ----------
+  // Pravidla pohybu: jen transform a opacity, ease-out, žádná smyčka. Vlastní tah reaguje hned,
+  // soupeřův tah se nejdřív ohlásí stopou (odkud a kam), pak teprve přiletí.
+  const EASE = "cubic-bezier(.16,1,.3,1)";
+  const T_SLIDE = 240, T_INHALE = 240, T_HIT = 110, T_FLY = 560, T_LAND = 260, T_DROP = 440;
   // snímek pozic všech figurek před překreslením (podle data-id)
   function snapshot() {
     const m = {};
     document.querySelectorAll("#game [data-id]").forEach(el => { m[el.dataset.id] = el.getBoundingClientRect(); });
     return m;
   }
-  const EASE = "cubic-bezier(.16,1,.3,1)";
   function center(r) { return [r.left + r.width / 2, r.top + r.height / 2]; }
+  const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  // oblouková dráha jako řada klíčových snímků (hladší než lomená čára se dvěma body)
+  function arc({ x0 = 0, y0 = 0, x1 = 0, y1 = 0, lift = 40, s0 = 1, s1 = 1, bulge = .12, flip = 0, n = 14, pre = 0 }) {
+    const out = [];
+    for (let k = 0; k <= n; k++) {
+      const t = k / n, e = easeIO(t);
+      const x = x0 + (x1 - x0) * e, y = y0 + (y1 - y0) * e - 4 * lift * t * (1 - t);
+      const sc = (s0 + (s1 - s0) * e) * (1 + bulge * Math.sin(Math.PI * t));
+      const ang = flip ? 180 * Math.min(1, Math.max(0, (t - pre) / .42)) : 0;
+      out.push({ offset: t, transform: `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) ${flip ? `rotateY(${ang.toFixed(1)}deg) ` : ""}scale(${sc.toFixed(3)})` });
+    }
+    return out;
+  }
+  // krátká stopa soupeřova tahu: čára z pole odkud na pole kam, pak zhasne
+  function trace(a, b, p, delay) {
+    const [x0, y0] = center(a), [x1, y1] = center(b), len = Math.hypot(x1 - x0, y1 - y0);
+    const rot = `rotate(${Math.atan2(y1 - y0, x1 - x0)}rad)`;
+    const el = document.createElement("div");
+    el.className = "trace";
+    el.style.cssText = `left:${x0}px;top:${y0}px;width:${len}px;background:${p === "x" ? "var(--ai)" : "var(--kaki)"};opacity:0;transform:${rot} scaleX(0)`;
+    $("fx").append(el);
+    el.animate([{ transform: `${rot} scaleX(0)`, opacity: .55 }, { transform: `${rot} scaleX(1)`, opacity: .55, offset: .4 }, { transform: `${rot} scaleX(1)`, opacity: 0 }], { duration: 760, delay, easing: "ease-out", fill: "both" }).finished.then(() => el.remove(), () => el.remove());
+  }
 
   function play(snap, info) {
     if (!info || !snap || view !== "play") return 0;
     if (calm()) return 0;
     const p0 = persp();
+    const ext = info.p !== me;                       // tah přišel od soupeře (nebo ho vidí přihlížející)
+    const d = ext ? T_INHALE : 0;
     const el = document.querySelector(`#board [data-id="${info.piece.id}"]`);
     const from = snap[info.piece.id];
-    let total = 320;
+    const toCell = document.querySelector(`#board .cell[data-i="${info.to}"]`);
+    let total = d + T_SLIDE;
+    if (ext && toCell) toCell.classList.add("fresh");
+    if (ext && el && from) trace(from, el.getBoundingClientRect(), info.p, 0);
     if (el && from) {
       const to = el.getBoundingClientRect();
       const dx = from.left - to.left, dy = from.top - to.top, sc = from.width / to.width;
-      const kf = info.dropped
-        ? [{ transform: `translate(${dx}px,${dy}px) scale(${sc})` }, { transform: `translate(${dx * .45}px,${dy * .45 - 34}px) scale(1.14)`, offset: .55 }, { transform: "translate(0,0) scale(.94,1.06)", offset: .86 }, { transform: "none" }]
-        : [{ transform: `translate(${dx}px,${dy}px)` }, { transform: "none" }];
       el.style.zIndex = 3;
-      el.animate(kf, { duration: info.dropped ? 480 : 320, easing: info.dropped ? "ease-in-out" : EASE }).finished.then(() => el.style.zIndex = "", () => {});
-      if (info.dropped) total = 480;
+      if (info.dropped) {
+        const kf = arc({ x0: dx, y0: dy, s0: sc, lift: 34, bulge: .14, n: 12 }).map(f => ({ ...f, offset: f.offset * .84 }));
+        kf.push({ offset: .92, transform: "translate(0,0) scale(1.06,.94)" }, { offset: 1, transform: "none" });
+        el.animate(kf, { duration: T_DROP, delay: d, easing: "linear", fill: "backwards" }).finished.then(() => el.style.zIndex = "", () => {});
+        total = d + T_DROP;
+      } else {
+        el.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: "none" }], { duration: T_SLIDE, delay: d, easing: EASE, fill: "backwards" }).finished.then(() => el.style.zIndex = "", () => {});
+      }
     }
-    if (info.captured) total = Math.max(total, capture(snap, info, p0));
+    if (info.captured) total = Math.max(total, capture(snap, info, p0, d));
     if (info.promoted && el) {
       const tile = el.querySelector(".tile");
       const base = tile.classList.contains("down") ? "rotate(180deg) " : "";
-      setTimeout(() => {
-        tile.animate([{ transform: base + "rotateY(0) scale(1)" }, { transform: base + "rotateY(90deg) scale(1.18)", offset: .45 }, { transform: base + "rotateY(360deg) scale(1)" }], { duration: 620, easing: "ease-in-out" });
-        petals(el.getBoundingClientRect(), "#F2A9B8", 8);
-      }, 300);
-      total = Math.max(total, 950);
+      const hen = tile.innerHTML, chick = art("C") + dots("C");
+      tile.innerHTML = chick;                          // nejdřív kuřátko, uprostřed otočení slepice
+      const t0 = d + T_SLIDE - 40, dur = 520;
+      setTimeout(() => { tile.innerHTML = hen; }, t0 + dur * .5);
+      tile.animate([{ transform: base + "rotateY(0) scale(1)" }, { transform: base + "rotateY(90deg) scale(1.16)", offset: .5 }, { transform: base + "rotateY(180deg) scale(1.16)", offset: .5 }, { transform: base + "rotateY(360deg) scale(1)" }], { duration: dur, delay: t0, easing: "ease-in-out", fill: "backwards" });
+      total = Math.max(total, t0 + dur + 60);
     }
-    if (info.lionHome) total = Math.max(total, 400);
+    if (info.lionHome) total = Math.max(total, d + T_SLIDE + 160);
     return total;
   }
 
-  // sebrané zvíře se otočí, změní barvu a přeběhne do zásoby toho, kdo ho sebral
-  function capture(snap, info, p0) {
+  // sebrané zvíře se na místě otočí, změní barvu na tvou a přeběhne do zásoby toho, kdo ho sebral
+  function capture(snap, info, p0, d) {
     const cap = info.captured, from = snap[cap.id];
-    const dest = document.querySelector(`#game .tray [data-id="${cap.id}"]`);
-    if (!from || !dest) return 0;
-    const to = dest.getBoundingClientRect();
     const newT = cap.t === "H" ? "C" : cap.t;
+    const tray = document.querySelector(`#game .tray[data-tray="${info.p}"]`);
+    const dest = cap.t === "L" ? document.querySelector(`#game .tray [data-id="${cap.id}"]`) : tray && tray.querySelector(`.hp[data-t="${newT}"] .pc`);
+    if (!from || !dest) return 0;
+    const host = dest.closest(".hp") || dest, to = dest.getBoundingClientRect();
+    const cell = document.querySelector(`#board .cell[data-i="${info.to}"]`);
+    // sebrané zvíře zůstane pod útočníkem, dokud nedoběhne
+    let under = null;
+    if (cell) { cell.insertAdjacentHTML("afterbegin", pieceHTML(cap.t, cap.p, cap.p === p0).replace('class="pc ', 'class="pc victim ')); under = cell.firstElementChild; }
+    const n = +host.dataset.n || 1, badge = host.querySelector(".cnt");
+    if (n > 1 && badge) badge.textContent = String(n - 1); else host.style.visibility = "hidden";
     const g = document.createElement("div");
     g.className = "ghost";
-    Object.assign(g.style, { left: from.left + "px", top: from.top + "px", width: from.width + "px", height: from.height + "px" });
+    Object.assign(g.style, { left: from.left + "px", top: from.top + "px", width: from.width + "px", height: from.height + "px", visibility: "hidden" });
     g.innerHTML = `<div class="face">${pieceHTML(cap.t, cap.p, cap.p === p0)}</div><div class="face back">${pieceHTML(newT, info.p, info.p === p0)}</div>`;
     $("fx").append(g);
-    const host = dest.closest(".hp") || dest;
-    host.style.visibility = "hidden";
     const [fx0, fy0] = center(from), [tx, ty] = center(to);
     const dx = tx - fx0, dy = ty - fy0, sc = to.width / from.width;
-    const lift = Math.min(90, 40 + Math.abs(dy) * .25);
-    const anim = g.animate([
-      { transform: "translate(0,0) rotateY(0) rotate(0) scale(1)" },
-      { transform: "translate(0,-16px) rotateY(0) rotate(-8deg) scale(1.16)", offset: .2 },
-      { transform: "translate(0,-12px) rotateY(0) rotate(7deg) scale(1.16)", offset: .3 },
-      { transform: `translate(${dx * .5}px,${dy * .5 - lift}px) rotateY(180deg) rotate(0) scale(${(1 + sc) / 2 + .1})`, offset: .66 },
-      { transform: `translate(${dx}px,${dy}px) rotateY(180deg) rotate(0) scale(${sc})` },
-    ], { duration: 1050, delay: 160, easing: "cubic-bezier(.45,0,.2,1)", fill: "both" });
-    setTimeout(() => burst(from, info.p), 200);
+    const t0 = d + T_HIT;
+    const kf = arc({ x1: dx, y1: dy, lift: Math.min(70, 34 + Math.abs(dy) * .12), s0: 1.04, s1: sc, bulge: .2, flip: 1, pre: .04, n: 16 });
+    setTimeout(() => { g.style.visibility = ""; if (under) under.remove(); ring(from, info.p); }, t0);
+    const anim = g.animate(kf, { duration: T_FLY, delay: t0, easing: "linear", fill: "both" });
     const done = () => {
       g.remove(); host.style.visibility = "";
-      host.animate([{ transform: "scale(1.35) translateY(-4px)" }, { transform: "scale(.92)", offset: .6 }, { transform: "none" }], { duration: 300, easing: EASE });
+      if (badge) { badge.textContent = String(n); badge.animate([{ transform: "scale(1.5)" }, { transform: "none" }], { duration: T_LAND, easing: EASE }); }
+      host.animate([{ transform: "scale(1.3) translateY(-4px)" }, { transform: "scale(.94)", offset: .55 }, { transform: "none" }], { duration: T_LAND, easing: EASE });
+      if (tray) { tray.classList.remove("recv"); void tray.offsetWidth; tray.classList.add("recv"); }
+      buzz(cap.t === "L" ? 40 : [10, 30, 16]);
     };
     anim.finished.then(done, done);
-    return 1250;
+    return t0 + T_FLY + T_LAND;
   }
-  function burst(r, p) {
+  // úder při sebrání: jeden kroužek v barvě toho, kdo bere
+  function ring(r, p) {
     const [cx, cy] = center(r), col = p === "x" ? "#2D4C8F" : "#C9502A";
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "burst"); svg.setAttribute("viewBox", "-60 -60 120 120");
     svg.style.left = cx + "px"; svg.style.top = cy + "px";
-    let d = "";
-    for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + .3, r1 = 30, r2 = 46; d += `M${(Math.cos(a) * r1).toFixed(1)} ${(Math.sin(a) * r1).toFixed(1)}L${(Math.cos(a) * r2).toFixed(1)} ${(Math.sin(a) * r2).toFixed(1)}`; }
-    svg.innerHTML = `<path d="${d}" stroke="${col}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+    svg.innerHTML = `<circle r="34" fill="none" stroke="${col}" stroke-width="4"/>`;
     $("fx").append(svg);
-    svg.animate([{ transform: "scale(.5)", opacity: 1 }, { transform: "scale(1.25)", opacity: 0 }], { duration: 420, easing: EASE }).finished.then(() => svg.remove(), () => svg.remove());
-  }
-  function petals(r, col, n) {
-    const [cx, cy] = center(r);
-    for (let k = 0; k < n; k++) {
-      const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      s.setAttribute("viewBox", "0 0 20 20"); s.style.cssText = `position:fixed;left:${cx - 8}px;top:${cy - 8}px;width:16px;height:16px`;
-      s.innerHTML = `<path d="M10 2 C15 6 15 13 10 18 C5 13 5 6 10 2Z M10 2 L10 6" fill="${col}" stroke="#D97B90" stroke-width="1"/>`;
-      $("fx").append(s);
-      const a = k / n * Math.PI * 2 + Math.random() * .4, dist = 48 + Math.random() * 30;
-      s.animate([{ transform: "translate(0,0) rotate(0) scale(.4)", opacity: 1 }, { transform: `translate(${Math.cos(a) * dist}px,${Math.sin(a) * dist + 18}px) rotate(${200 + k * 40}deg) scale(1)`, opacity: 0 }], { duration: 900, easing: "cubic-bezier(.2,.7,.3,1)" }).finished.then(() => s.remove(), () => s.remove());
-    }
+    svg.animate([{ transform: "scale(.5)", opacity: .9 }, { transform: "scale(1.35)", opacity: 0 }], { duration: 380, easing: EASE }).finished.then(() => svg.remove(), () => svg.remove());
   }
   function narrate(info, g) {
     const who = info.p === me ? "Ty" : nameOf(g, info.p);
@@ -953,7 +1036,14 @@
   }
 
   // nová pozice + případná animace posledního tahu
+  // dokončí rozběhnuté animace a uklidí efekty, aby nový tah vycházel z čisté desky
+  function settleFx() {
+    attempt(() => document.getAnimations().forEach(a => { const t = a.effect && a.effect.getTiming(); if (t && t.iterations !== Infinity) a.finish(); }));
+    $("fx").textContent = "";
+    document.querySelectorAll("#game .tray .hp").forEach(b => b.style.visibility = "");
+  }
   function showGame(g, animate) {
+    if (animate) settleFx();
     const snap = animate ? snapshot() : null;
     setGame(g);
     sel = null;
@@ -966,15 +1056,32 @@
       const t = play(snap, info);
       animUntil = Date.now() + t;
       if (game.result && !calm()) { h.style.animationDelay = (t + 120) + "ms"; void h.offsetWidth; h.classList.add("slam"); }
+      if (game.result) endBuzz(t);
       say(narrate(info, g) + (game.result ? " " + $("endL1").textContent + " " + $("endL2").textContent : ""));
     }
   }
+
+  // konec partie: dotek, který rozliší výhru a prohru, a na úzkém displeji doposouvání k výsledku a tlačítku odvety
+  function endBuzz(t) {
+    const r = game.result;
+    setTimeout(() => buzz(!r.w || !me ? [30] : r.w === me ? [20, 60, 20, 60, 70] : [90]), t + 120);
+    if (calm() || !matchMedia("(max-width: 979px)").matches) return;
+    const shot = ++endBuzz.n;
+    setTimeout(() => {
+      const b = $("endBox");
+      if (shot !== endBuzz.n || b.hidden || view !== "play") return;
+      const over = b.getBoundingClientRect().bottom + 12 - innerHeight;
+      if (over > 0) window.scrollBy({ top: over, behavior: "smooth" });
+    }, t + 1100);
+  }
+  endBuzz.n = 0;
 
   // ---------- zápis do místnosti ----------
   // otisk partie: změna počítadla bez změny partie (např. soupeř právě přijal výzvu) není konflikt
   const sig = g => g ? [g.x, g.o, g.s, g.m.join(","), g.w.join(":"), g.r, g.k, g.kc].join("|") : "";
   async function commit(next, ok, conflictText, base = st) {
-    busy = true; pollSeq++; render();
+    busy = true; busySince = Date.now(); pollSeq++; render();
+    setTimeout(() => { if (busy) render(); }, 950);     // „Zapisuju tah…“ se ukáže, až když zápis trvá
     let d;
     try { d = await loadDoc(room.id); }
     catch { busy = false; toast("Spojení nevyšlo, zkus to znovu."); render(); return false; }
@@ -1005,7 +1112,7 @@
     // partie beze změny (soupeř jen přijal výzvu): výběr figurky zůstává
     if (view === "play" && sig(g) === sig(prev)) { render(); return; }
     if (view === "share" || view === "info" || view === "setup") { setGame(g); return; }
-    if (grew && me && S.play(g).s.turn === me) buzz();
+    if (grew && me && S.play(g).s.turn === me) buzz([12, 40, 12]);
     showGame(g, grew);
     remember();
   }
@@ -1042,18 +1149,26 @@
   window.addEventListener("focus", wake);
 
   // ---------- hraní ----------
+  // klepnutí, když nejsi na tahu: stav krátce ukáže, že hra čeká na soupeře (bez pohybu jen hláška)
+  function notYourTurn() {
+    if (!me || busy || ended() || turn() === me || view !== "play") return;
+    const box = document.querySelector("#playBox .status");
+    if (calm()) { toast(`Čeká se na hráče ${nameOf(st, turn())}.`); return; }
+    box.classList.remove("nudge"); void box.offsetWidth; box.classList.add("nudge");
+    buzz(8);
+  }
   function tapCell(i) {
-    if (!canPlay()) return;
+    if (!canPlay()) { notYourTurn(); return; }
     const pc = game.s.b[i];
     const t = targets().find(m => m.to === i);
     if (t) { move(t); return; }
-    if (pc && pc.p === me) { sel = sel && sel.k === "m" && sel.f === i ? null : { k: "m", f: i }; buzz(); render(); return; }
-    if (sel) { sel = null; render(); }
+    if (pc && pc.p === me) { sel = sel && sel.k === "m" && sel.f === i ? null : { k: "m", f: i }; buzz(8); refreshSel(); return; }
+    if (sel) { sel = null; refreshSel(); }
   }
   function pickDrop(t) {
     if (!canPlay()) return;
     sel = sel && sel.k === "d" && sel.t === t ? null : { k: "d", t };
-    buzz(); render();
+    buzz(8); refreshSel();
   }
   async function move(mv) {
     if (!canPlay() || !S.legal(game.s, mv)) return;

@@ -1,5 +1,11 @@
 # Deník – Zvířátkové šógi
 
+## 2026-10-31 · Claude (pocit ze hry, bez dekorací)
+- Hotovo lokálně, **nenasazeno a nepushnuto** (čeká na nezávislou kritiku designu): přeběhnutí zkráceno z ~1250 na ~700 ms u toho, kdo táhne (soupeř vidí ~940 ms včetně 240 ms „nádechu“), oblouková dráha, otočení a změna barvy na místě, úder jako jeden kroužek, dopad do zásoby s kroužkem a počitadlem; stejná zvířátka v zásobě jsou jeden kámen s číslem; stopa soupeřova tahu (čára odkud–kam, rámeček cíle, text „Radka: slon z C4 na B3, bere kuřátko.“); výběr figurky a cíle se mění na místě, takže naběhnou hned i uprostřed animace (dřív až po ní); proměna ukáže kuřátko a uprostřed otočení slepici; razítko sedne na prázdné pole nejdál od posledního tahu a vítězná figurka má červený rámeček; výsledek se ukáže až po dohrání tahu, na úzkém displeji se stránka po razítku doposune k tlačítku odvety.
+- Odstraněno jako dekorace: radiální gradienty pozadí, „dýchající“ kroužek na kotouči hráče, houpání zvířátek na úvodních obrazovkách, okvětní lístky při proměně, paprsky při sebrání, gradient cílové řady, „×“ jako oddělovač (teď „proti“).
+- Testy: engine 10, dva prohlížeče 33, desktop+iPhone 143 (jedna kontrola konce partie záměrně změněna, viz test), nový `tests/pocit.cjs` 29.
+- Neověřeno: skutečný iPhone (headless WebKit má pomalé snímky, plynulost animace jen z Chromia), vibrace, rychlost dotazování 2,5 s (největší brzda tempa, nezměněno, neznám limity mantledb.sh).
+
 ## 2026-10-31 · Claude (plocha, celá obrazovka, rozvržení, tmavý režim)
 - Hotovo (commit f52c350, nasazeno): tlačítko celé obrazovky v hlavičce (Fullscreen API, ikona i popisek podle stavu, na iPhonu nápověda „Přidat na plochu“, v aplikaci z plochy skryté), `manifest.webmanifest` (standalone, bez `start_url`), ikony 192/512/180 (`tools/make-icons.cjs`), apple meta, pole „Vlož odkaz na hru“ v aplikaci z plochy bez her, tlačítka „Jsem …“ i u skončené partie.
 - Rozvržení změřené: mobil 390×664 `#seatBot` bottom 600/664, 375×667 603/667, 390×844 663/844 (deska 311/313/358 px); desktop 1280×800 752/800, 1440×900 852/900 (deska 426/501 px, pravidla vpravo). Žádné vodorovné posouvání.
