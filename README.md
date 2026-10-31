@@ -27,7 +27,7 @@ Architektura a synchronizace převzaté z Psaníčka: statická stránka na GitH
   délka přeběhnutí, text a značky posledního tahu, počitadlo stejných zvířátek v zásobě, razítko mimo vítěznou figurku, žádná nekonečná animace, reduced motion.
   `node tests/pocit.cjs [URL]`
 - `tests/solo.cjs` – sólo režim proti botovi (viz sekce Sólo), včetně kontroly úvodní obrazovky na iPhonu: `node tests/solo.cjs [URL]`
-- `tests/herna.cjs` – napojení na Hernu (viz sekce Herna): `node tests/herna.cjs [URL]` (na localhostu falešná síť, jinak skutečný mantledb.sh; `SITE=fake|real` vynutí)
+- `tests/herna.cjs` – napojení na Hernu (viz sekce Herna): `node tests/herna.cjs [URL]` (na localhostu falešná síť, jinak skutečný mantledb.sh; `SITE=fake|real` vynutí); `tests/herna-zive.cjs` – totéž přes skutečnou živou Hernu
 - `tests/render-review.cjs` – finální rendery pro kritiku designu do `tests/shots/review/` (desktop 1280×800, iPhone 13, tmavý režim mobilu): `node tests/render-review.cjs [URL]`
 - `manifest.webmanifest`, `icons/` – aplikace na plochu. Ikony (lev na dřevěném kameni s indigovým okrajem) se generují z kresby lva:
   `node tools/make-icons.cjs` (Playwright vyrenderuje `icons/icon.svg` do PNG 192, 512 a 180 pro `apple-touch-icon`).
@@ -83,6 +83,7 @@ Hra umí protokol Herny verze 1 (`react-apps/HERNA-PROTOKOL.md`): `<meta name="h
 - Skryté: sdílení odkazu, „Zkusit sám“, kopírování odkazu, „Založit novou hru“, logo jako odkaz, tlačítko celé obrazovky. Zbývá nápověda, vzdát a odveta (poražený vybírá variantu jako dřív).
 - Zprávy rodiči (`postMessage({herna:1,…}, "*")`, jen v rámu): `pripraveno` při načtení; `stav` `ceka` (čeká se na soupeře / na dokument), `hraje`, `konec` (až po dohrání animace posledního tahu); `vysledek` `{partie: "<r>:<číslo kola>", vitez: sedadlo Herny | null}` jednou na okno (remíza = `null`); `jina-hra` z nového tlačítka „Jiná hra“ na konci partie (místo „Zkopírovat odkaz“).
 - Bez platného `herna=1` (chybí/špatné `r`, `seat`) se hra chová jako dřív: úvod, `#solo`, série, žádné zprávy.
+- `tests/herna-zive.cjs [URL Herny]`: skutečná živá Herna ve 2 prohlížečích (založení místnosti, výběr hry, partie, skóre v liště a v dokumentu Herny, „Jiná hra“); založí jednu zkušební místnost.
 - `tests/herna.cjs`: hra v iframe pod zkušebním rodičem s 48px lištou, Chromium desktop (Mark) + WebKit iPhone 13 (Radka); obě rozdělení sedadel, jména s čárkou / `&` / `%`, tři partie (výhra, výhra, remíza) s výsledkem pro správné sedadlo, odveta, „Jiná hra“, obnovení stránky, čekající zakladatel i čekající host, hra bez Herny.
 
 ## Pravidla a zdroj
