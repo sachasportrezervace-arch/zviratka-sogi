@@ -61,7 +61,20 @@ Architektura a synchronizace převzaté z Psaníčka: statická stránka na GitH
   (hra stejně nemůže pokračovat, dokud poražený netáhne, takže se nic nezasekne). Po remíze může odvetu založit kdokoli, platí první nabídnutá.
 - Férovost: test pro každou variantu a oba začínající ověřuje, že nikdo nevyhraje prvním tahem a začínající nevynutí výhru do 9 půltahů
   a má bezpečný první tah. Jednorázově ověřeno i do 11 půltahů (6 tahů začínajícího).
-- Dokument partie nese `vr` (varianta) a `n` (číslo kola, roste i po remíze). Starý dokument bez `vr` se hraje jako Klasika.
+- **Kuřátko na útěchu** (šance na návrat): kdo prohrál dvě kola za sebou, začne další kolo s kuřátkem navíc v zásobě (`Sogi.consolation`,
+  `Sogi.initial(starter, vr, bonus)`). Platí i v tréninku proti botovi. Konec partie to ohlásí, u jména je štítek, dokud hráč poprvé netáhne.
+- Dokument partie nese `vr` (varianta), `n` (číslo kola, roste i po remíze), `h` (vítězové posledních kol: x / o / -) a `b` (kdo má kuřátko
+  na útěchu). Starý dokument bez `vr` se hraje jako Klasika, bez `b` bez bonusu.
+
+## Pro začátečníka a výrazy zvířátek
+
+- Průvodce prvním tahem: dokud hráč na tomhle zařízení neodehraje první tah (`zs-coach`), zvířátka, která můžou táhnout, jednou poskočí
+  a stav radí „Klepni na své zvířátko…“ / „Tečky ukazují, kam smí…“. Po prvním sebrání jednou rada k položení ze zásoby (`zs-tip-drop`).
+- Lev v ohrožení se bojí a potí (jednou se otřese), soupeřova figurka, která na něj míří, má červený obrys; stav radí „uteč, nebo útočníka seber“.
+  Ohrožený soupeřův lev = „Chyť ho!“. Text o soupeřově tahu zůstává vždy první.
+- Výrazy (vrstvy obličeje v SVG, třída `m-fear` / `m-joy` / `m-ko` na figurce): sebrané zvíře se lekne, odletí omráčené a v nové barvě
+  se tváří spokojeně; kdo sebral, ten se zubí; slepice po proměně je pyšná (a kroužek v barvě hráče); na konci se vítěz raduje, poražený lev
+  bojí a chycený lev v zásobě má křížky místo očí. Dopad razítka deskou otřese a vítězné zvířátko poskočí.
 - Tituly podle výher v sérii: 1 Učeň, 3 Strážce zásoby, 5 Lví mistr. Ukazují se u jména hráče a v lístku výsledku; nově dosažený titul
   se v konci partie jednou krátce zvýrazní. Od 3 výher má kotouč hráče tenký lakovaný okraj a razítko jeho výhry je hranaté.
 

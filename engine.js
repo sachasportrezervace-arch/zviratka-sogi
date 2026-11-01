@@ -40,7 +40,8 @@
   const VR_KEYS = Object.keys(VARIANTS);
   const vrOf = v => VARIANTS[v] ? v : "k";   // chybějící nebo neznámá varianta (starý dokument) = klasika
 
-  function initial(starter, vr) {
+  // bonus = "x" | "o": ten hráč dostane navíc kuřátko do zásoby (kuřátko na útěchu, viz consolation)
+  function initial(starter, vr, bonus) {
     const V = VARIANTS[vrOf(vr)];
     const b = new Array(CELLS).fill(null), h = { x: [], o: [] };
     let id = 0;
@@ -48,7 +49,15 @@
     V.o.forEach(([i, t]) => put(i, t, "o"));
     [...V.o].reverse().forEach(([i, t]) => put(CELLS - 1 - i, t, "x"));
     V.hand.forEach(t => { h.o.push({ t, id: id++ }); h.x.push({ t, id: id++ }); });
+    if (bonus === "x" || bonus === "o") h[bonus].push({ t: "C", id: id++ });
     return { b, h, turn: starter === "o" ? "o" : "x" };
+  }
+
+  // šance na návrat: kdo prohrál dvě kola za sebou, začne další kolo s kuřátkem navíc v zásobě.
+  // hist = vítězové kol za sebou ("x", "o", "-" remíza); vrací "x" | "o" | ""
+  function consolation(hist) {
+    const h = String(hist || ""), a = h.slice(-1), b = h.slice(-2, -1);
+    return (a === "x" || a === "o") && a === b ? other(a) : "";
   }
 
   // nabídka dvou variant pro další kolo: deterministicky ze seedu (id místnosti + číslo kola), bez té, která se právě hrála
@@ -142,7 +151,7 @@
   // přehraje celou partii; neplatný tah partii utne (vrátí ok:false)
   // výsledek: { w: "x"|"o"|null, why: "lev"|"cil"|"vzdal"|"opak"|"blok" }
   function play(g) {
-    let s = initial(g.s, g.vr), result = null, last = null, ok = true, prev = null;
+    let s = initial(g.s, g.vr, g.b), result = null, last = null, ok = true, prev = null;
     const seen = new Map([[key(s), 1]]);
     for (let n = 0; n < g.m.length; n++) {
       const mv = dec(g.m[n]);
@@ -182,6 +191,6 @@
     return pick(best > 0 ? pool.filter(x => val(x) === best) : pool).m;
   }
 
-  root.Sogi = { bot,  ROWS, COLS, CELLS, DIRS, NAMES, VARIANTS, VR_KEYS, RANKS, vrOf, offer, rank, other, goalRow, rc, initial, reach, attacked, moves, legal, enc, dec, apply, key, play };
+  root.Sogi = { bot, consolation, ROWS, COLS, CELLS, DIRS, NAMES, VARIANTS, VR_KEYS, RANKS, vrOf, offer, rank, other, goalRow, rc, initial, reach, attacked, moves, legal, enc, dec, apply, key, play };
   if (typeof module !== "undefined") module.exports = root.Sogi;
 })(typeof globalThis !== "undefined" ? globalThis : this);

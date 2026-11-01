@@ -1,5 +1,6 @@
 # Deník – Zvířátkové šógi
 
+PŘEVZATO 1. 11. – kolo vylepšení, session zviratka-kolo (Claude); jiná session sem nepíše.
 PŘEVZATO 31. 10. – dodělává session na účtu P, jiná session sem nepíše.
 
 ## 2026-10-31 · Claude (napojení na Hernu + „Zkusit sám“ na iPhonu)

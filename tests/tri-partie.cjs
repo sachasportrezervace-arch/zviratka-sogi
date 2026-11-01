@@ -70,14 +70,17 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
     const small = [...document.querySelectorAll("#board .cell, .hp, .iconbtn, #pickSeg button, #pick2Seg button")].filter(e => e.offsetWidth).filter(e => { const b = e.getBoundingClientRect(); return b.width < 43.5 || b.height < 43.5; }).length;
     return { ok: scrollY === 0 && r("#seatTop").top >= 0 && r("#seatBot").bottom <= innerHeight && r("#status").bottom <= innerHeight && document.documentElement.scrollWidth <= innerWidth, small, sy: Math.round(scrollY), bot: Math.round(r("#seatBot").bottom), st: Math.round(r("#status").bottom), ih: innerHeight };
   });
+  // kuřátko na útěchu (kdo prohrál dvakrát za sebou) hlásí štítek u jména; rozestavení se počítá i s ním
+  const bonusSeen = async (p, mine) => (await p.locator("#seatBot .tag").innerText()).includes("útěchu") ? mine : (await p.locator("#seatTop .tag").innerText()).includes("útěchu") ? S.other(mine) : "";
   const expectedBoard = async (p, vr, starter, mine) => {
-    const exp = S.initial(starter, vr), me = mine;
+    const exp = S.initial(starter, vr, S.consolation(round.hist)), me = mine;
+    if ((await bonusSeen(p, mine)) !== S.consolation(round.hist)) return false;
     const sq = i => exp.b[i] ? `${exp.b[i].p === me ? "tvoje" : "soupeřova"} ${S.NAMES[exp.b[i].t].n}` : "prázdné";
     const got = await p.locator("#board .cell").evaluateAll(els => els.map(e => [+e.dataset.i, e.getAttribute("aria-label")]));
     const handN = await p.locator("#seatBot .tray .hp").count();
     return got.length === 12 && got.every(([i, l]) => l.includes(sq(i))) && handN === new Set(exp.h[me].map(c => c.t)).size;
   };
-  const round = { vr: [], boards: [] };
+  const round = { vr: [], boards: [], hist: "" };
   // zvýraznění titulu trvá jen chvíli a každý prohlížeč ukáže konec jindy: zaznamená, jestli se třída fresh objevila
   const watchFresh = p => p.evaluate(() => {
     window.__fr = new Set();
@@ -139,6 +142,7 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
   await A.waitForSelector("#endBox", { state: "hidden", timeout: T });
   const vr2 = rm2.pick;
   check("kolo 2: jiná varianta než kolo 1 a je to ta, kterou poražená vybrala", vr2 !== "k" && vr2 === offer2[1] && (await H.vrOf(A)) === vr2 && (await H.vrOf(B)) === vr2, `k → ${vr2}`);
+  round.hist += "x";
   await start(2, vr2, "o");
   await playLine(H.winLine(vr2, "o", "x"), B, A);
   await A.waitForSelector("#endBox:not([hidden])", { timeout: T });
@@ -156,6 +160,7 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
   await A.waitForSelector("#endBox", { state: "hidden", timeout: T });
   const vr3 = offer3[0];
   check("kolo 3: varianta je první nabídnutá (poražená nic nepřepnula) a liší se od kola 2", (await H.vrOf(A)) === vr3 && (await H.vrOf(B)) === vr3 && vr3 !== vr2, `${vr2} → ${vr3}`);
+  round.hist += "x";
   await start(3, vr3, "o");
   await watchFresh(A); await watchFresh(B);
   await playLine(H.winLine(vr3, "o", "x"), B, A);
@@ -195,7 +200,9 @@ const shot = (p, n) => p.screenshot({ path: path.join(SHOTS, n + ".png") });
   await myTurn(B);
   await A.waitForSelector("#endBox", { state: "hidden", timeout: T });
   check("kolo 4: poražená vybrala druhou nabídnutou variantu, propsalo se oběma", rm4.pick === offer4[1] && (await H.vrOf(A)) === offer4[1] && (await H.vrOf(B)) === offer4[1], `${vr3} → ${offer4[1]}`);
+  round.hist += "x";
   await start(4, offer4[1], "o");
+  check("kolo 4: Radka prohrála třikrát za sebou, začíná s kuřátkem na útěchu (štítek i zásoba u obou)", (await bonusSeen(A, "x")) === "o" && (await bonusSeen(B, "o")) === "o" && (await A.locator("#seatTop .tray .hp[data-t=C]").count()) === 1);
   check("kola 1–4: každé kolo má jinou variantu než předchozí", round.vr.every((v, i) => i === 0 || v !== round.vr[i - 1]), round.vr.join(" → "));
   check("kola 1–3: aspoň dvě různé rozestavení desky", new Set(round.vr.slice(0, 3)).size >= 2);
   check("žádné chyby JavaScriptu", errs.length === 0, errs.join(" | "));

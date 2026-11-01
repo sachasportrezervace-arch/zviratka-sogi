@@ -212,4 +212,18 @@ t("bot: vezme vyhrávající tah, nenechá si chytit lva, bere, a partie bota s 
     assert.ok(done, "partie bota skončila");
   }
 });
+t("kuřátko na útěchu: dvě prohry za sebou dají kuřátko navíc, partie s bonusem se přehraje", () => {
+  assert.equal(S.consolation(""), ""); assert.equal(S.consolation("x"), "");
+  assert.equal(S.consolation("xx"), "o"); assert.equal(S.consolation("oxoo"), "x");
+  assert.equal(S.consolation("x-"), ""); assert.equal(S.consolation("xo"), ""); assert.equal(S.consolation("--"), "");
+  const s = S.initial("x", "k", "o");
+  assert.deepEqual(s.h.o.map(c => c.t), ["C"]); assert.equal(s.h.x.length, 0);
+  const d = S.initial("x", "d", "x");
+  assert.deepEqual(d.h.x.map(c => c.t), ["C", "C"]); assert.deepEqual(d.h.o.map(c => c.t), ["C"]);
+  const ids = [...d.b.filter(Boolean), ...d.h.x, ...d.h.o].map(c => c.id);
+  assert.equal(new Set(ids).size, ids.length, "id jsou jedinečná");
+  // položení kuřátka na útěchu je legální jen s bonusem
+  assert.ok(S.play({ s: "o", vr: "k", b: "o", m: ["dC5"] }).ok);
+  assert.ok(!S.play({ s: "o", vr: "k", m: ["dC5"] }).ok);
+});
 console.log(`\n${n} testů prošlo`);
