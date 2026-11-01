@@ -246,6 +246,44 @@
   /* v Herně hru vybírá a zakládá Herna: žádné sdílení, sólo ani odkazy ven */
   html.herna .soloentry, html.herna #home { pointer-events: none; }
   html.herna .soloentry { display: none; }
+  /* v Herně hra sedí v nízkém rámu pod lištou (iPhone 13: ~613 px) a nesmí se v něm dát odrolovat: skóre ukazuje lišta Herny, pravidla jsou v nápovědě */
+  html.herna .aside-play { display: none !important; }
+  html.herna #say { top: 0; left: 0; }   /* skrytý hlásič čtečky by jinak ležel pod stránkou a prodlužoval ji */
+  @media (max-width: 979px) {
+    html.herna { --bw: min(calc(100vw - 32px), 372px, calc((100dvh - 246px) * .75)); }
+    html.herna .app { position: relative; padding-top: 4px; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+    html.herna header.top { min-height: 40px; justify-content: flex-end; }
+    html.herna .brand, html.herna .score { display: none; }
+    html.herna .iconbtn { width: 40px; height: 40px; }
+    /* „Vzít tah zpět“ sedí v prázdném levém rohu hlavičky, nezvětšuje stránku */
+    html.herna #undoBtn { position: absolute; z-index: 3; left: max(16px, env(safe-area-inset-left)); top: 6px; min-height: 36px; padding: 4px 14px; font-size: 14px; border-radius: 12px; }
+    html.herna .acts { margin-top: 0; }
+    html.herna .seat { padding: 2px 8px; }
+    html.herna .tray { min-height: 48px; }
+    html.herna .hp { width: 40px; height: 40px; }
+    html.herna .stage { margin: 4px auto; }
+    html.herna .kolo { font-size: 12px; margin: 0 0 -4px; }
+    html.herna .status { min-height: 63px; padding: 3px 4px 0; }
+    html.herna .status h2 { font-size: 19px; }
+    html.herna .status p { margin-top: 2px; font-size: 13px; line-height: 1.3; }
+    /* konec partie: bez zásob, bez lístku se sérií a tituly (série je v liště Herny), výsledek a volba dalšího kola na pár řádků,
+       Odveta a Jiná hra vedle sebe a přilepené dole */
+    html.herna:has(#endBox:not([hidden])) { --bw: min(calc(100vw - 32px), 372px, calc((100dvh - 310px) * .75)); }
+    html.herna .stage { transition: width .35s var(--ease); }
+    html.herna .hanko { width: 40%; margin: -20% 0 0 -20%; font-size: max(11px, 4.6cqi); }   /* deska je na konci menší, text razítka musí zůstat v kroužku */
+    html.herna:has(#endBox:not([hidden])) .tray, html.herna:has(#endBox:not([hidden])) #seatBot { display: none; }
+    html.herna .result { margin-top: 4px; padding: 10px 12px 8px; border-radius: 18px; }
+    html.herna .result h2 { font-size: 19px; }
+    html.herna .result .l2 { margin-top: 2px; font-size: 15px; }
+    html.herna .ticket, html.herna .result .meta { display: none; }
+    html.herna .pick { margin-top: 6px; }
+    html.herna #pickLbl { display: none; }
+    html.herna .pick .seg { padding: 3px; gap: 4px; }
+    html.herna .pick .seg button { min-height: 36px; padding: 4px 8px; }
+    html.herna .pick .pnote, html.herna .pnote.come { margin: 4px 2px 0; font-size: 12px; line-height: 1.3; }
+    html.herna .result .stack { display: flex; gap: 8px; margin-top: 8px; padding-top: 2px; position: sticky; bottom: 0; background: var(--washi-2); }
+    html.herna .result .stack .btn { flex: 1 1 0; min-height: 44px; padding: 8px 12px; }
+  }
   .pick { margin: 10px 0 0; text-align: left; }
   .pick small { display: block; margin: 0 2px 6px; font-weight: 700; font-size: 12px; letter-spacing: .04em; color: var(--sumi-2); }
   .pick .seg { background: var(--washi); }
@@ -1361,7 +1399,7 @@
     const r = game.result;
     setTimeout(() => buzz(!r.w || !me ? [30] : r.w === me ? [20, 60, 20, 60, 70] : [90]), t + 120);
     // telefon na šířku nerolovat: deska by ujela nahoru a razítko i radost vítěze by nebyly vidět
-    if (calm() || !matchMedia("(max-width: 979px)").matches || matchMedia("(max-height: 500px)").matches) return;
+    if (HR || calm() || !matchMedia("(max-width: 979px)").matches || matchMedia("(max-height: 500px)").matches) return;   // v Herně se výsledek vejde do rámu, doposouvání netřeba
     const shot = ++endBuzz.n;
     setTimeout(() => {
       const b = $("endBox");
