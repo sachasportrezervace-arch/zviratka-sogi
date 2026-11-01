@@ -10,6 +10,7 @@ PŘEVZATO 31. 10.
 - NEOVĚŘENO: skutečný iPhone; zda rady nejsou Markovi otravné (průvodce zmizí po prvním tahu na zařízení, rady o lvu zůstávají).
 - Živě po nasazení b2244b2 (Pages, exit 0): tri-partie 43/0, solo 141/0, dva-prohlizece 46/0. herna-zive spadl na `#pas-zalozit` ve stránce Herny (Hernu dnes upravuje jiná session, se Zvířátky nesouvisí); Herna-protokol přes zkušební rodiče lokálně 43/0.
 - Design-eye kolo 1 na živém buildu: **PROFI, ale těsně**. Výrazy „mají humor“, sekvence sebrání čistá, kuřátko na útěchu čisté. Opraveno hned: obrys útočníka a strach lva naběhnou až po dopadu soupeřova tahu (dřív dvojitý obrys za letu), telefon na šířku se na konci nedoroluje (deska a razítko zůstanou vidět).
+- Nasazeno a723a8b (načasování + rady: průvodce po tahu soupeře mlčí, tah soupeře se zkrátí jen u „Pozor na lva!“ / „Chyť jeho lva!“ / rady k zásobě). Lokálně pocit 29/0, solo 141/0 (2×; jednou 140/1 = náhodně krátká partie, bot 0× v textu), dva-prohlizece 46/0. Živě (exit 0): pocit 29/0, solo 141/0, dva-prohlizece 46/0.
 - Dál (nezapracováno): 1) telefon na šířku (750×342): deska a karta vedle sebe, ať je celá vidět; 2) na desktopu výrazy malé (hlavu při m-fear/m-joy krátce zvětšit); 3) panel „Jak se hraje“ na desktopu po prvním tahu sbalit; 4) razítko je text na desce (dřívější kola ho schválila, design-eye teď navrhuje mimo desku), rozhodnutí na Markovi. – dodělává session na účtu P, jiná session sem nepíše.
 
 ## 2026-10-31 · Claude (napojení na Hernu + „Zkusit sám“ na iPhonu)
