@@ -1,7 +1,16 @@
 # Deník – Zvířátkové šógi
 
 PŘEVZATO 1. 11. – kolo vylepšení, session zviratka-kolo (Claude); jiná session sem nepíše.
-PŘEVZATO 31. 10. – dodělává session na účtu P, jiná session sem nepíše.
+PŘEVZATO 31. 10.
+
+## 2026-11-01 · Claude, zviratka-kolo (začátečník, výrazy, klíčové momenty, šance na návrat)
+- Nejslabší místa z hraní (živě sólo na iPhonu + tri-partie 42/0 před změnami): 1) rámeček „sebereš“ byl po výběru figurky schovaný pod kamenem (refreshSel vkládal .mark pod figurku), 2) začátečník neví, čím začít, 3) lva může soupeř chytit bez varování, prohra pak působí nefér, 4) zvířátka mají jeden výraz, klíčové momenty nemají postavu, 5) šance na návrat v sérii je jen „poražený vybírá a začíná“.
+- Hotovo (b2244b2): oprava rámečku; výrazy v SVG (vrstvy fx-n/fear/joy/ko, třídy m-…): ohrožený lev se bojí a potí a jednou se otřese, útočník na mého lva má červený obrys, sebrané zvíře se lekne → odletí s křížky → v nové barvě se usmívá, kdo sebral se zubí, slepice po proměně pyšná + kroužek, na konci vítěz radost / poražený lev strach / chycený lev v zásobě křížky, dopad razítka otřese deskou a vítěz poskočí; průvodce prvním tahem (zs-coach: tahající zvířátka jednou poskočí, rada pod deskou), jednorázová rada k položení (zs-tip-drop), rady „Pozor na lva!“ / „Chyť jeho lva!“ za tahem soupeře (s radou kratší text tahu, ať se vejde na nízký iPhone); kuřátko na útěchu (2 prohry za sebou = kuřátko navíc; engine `consolation`, `initial(…, bonus)`, dokument `h`, `b`; i v sólu).
+- Ověřeno lokálně (python http.server 8805): engine 31/0 (nový test útěchy), solo 141/0, dva-prohlizece 46/0, desktop-iphone 159/0, herna 43/0, pocit 29/0, tri-partie 43/0 (nová kontrola kola 4 s kuřátkem na útěchu; jednou 42/1 kontrast „Chci odvetu“ v přechodu barev, známé zakolísání z 31. 10.). Hráčské snímky momentů: scratchpad/momenty.cjs.
+- NEOVĚŘENO: skutečný iPhone; zda rady nejsou Markovi otravné (průvodce zmizí po prvním tahu na zařízení, rady o lvu zůstávají).
+- Živě po nasazení b2244b2 (Pages, exit 0): tri-partie 43/0, solo 141/0, dva-prohlizece 46/0. herna-zive spadl na `#pas-zalozit` ve stránce Herny (Hernu dnes upravuje jiná session, se Zvířátky nesouvisí); Herna-protokol přes zkušební rodiče lokálně 43/0.
+- Design-eye kolo 1 na živém buildu: **PROFI, ale těsně**. Výrazy „mají humor“, sekvence sebrání čistá, kuřátko na útěchu čisté. Opraveno hned: obrys útočníka a strach lva naběhnou až po dopadu soupeřova tahu (dřív dvojitý obrys za letu), telefon na šířku se na konci nedoroluje (deska a razítko zůstanou vidět).
+- Dál (nezapracováno): 1) telefon na šířku (750×342): deska a karta vedle sebe, ať je celá vidět; 2) na desktopu výrazy malé (hlavu při m-fear/m-joy krátce zvětšit); 3) panel „Jak se hraje“ na desktopu po prvním tahu sbalit; 4) razítko je text na desce (dřívější kola ho schválila, design-eye teď navrhuje mimo desku), rozhodnutí na Markovi. – dodělává session na účtu P, jiná session sem nepíše.
 
 ## 2026-10-31 · Claude (napojení na Hernu + „Zkusit sám“ na iPhonu)
 - Hotovo: protokol Herny v1 (meta řádek, `#herna=1…` bez úvodu/výzvy, zprávy pripraveno / stav / vysledek / jina-hra, skryté sdílení a „Zkusit sám“); `tests/herna.cjs` 43/0 (iframe, 2 prohlížeče, falešná síť). Úvod na iPhonu: na nízkém telefonu se skryje řada zvířátek, „Zkusit sám“ je celé vidět (390×664 i 375×667), kontrola v `tests/solo.cjs`.

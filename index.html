@@ -196,8 +196,10 @@
   .pc.m-fear .fx-n, .pc.m-joy .fx-n, .pc.m-ko .fx-n { display: none; }
   .pc.m-fear .fx-fear, .pc.m-joy .fx-joy, .pc.m-ko .fx-ko { display: inline; }
   /* lev v ohrožení se jednou otřese; útočník má červený obrys (červená = nebezpečí a sebrání) */
-  .cell .pc.m-fear .tile { animation: shiver .42s ease-out both; animation-delay: var(--k0, 0ms); }
-  .cell.threat .tile { box-shadow: 0 0 0 2.5px #FCF2DF, 0 0 0 5.5px var(--hanko), var(--shadow); }
+  .cell .pc.m-fear .tile { animation: shiver .42s ease-out both; }
+  /* obrys útočníka naběhne až po dopadu soupeřova tahu (--k0 = délka animace tahu) */
+  .cell.threat .tile { box-shadow: 0 0 0 2.5px #FCF2DF, 0 0 0 5.5px var(--hanko), var(--shadow); animation: threatin .2s ease-out both; animation-delay: var(--k0, 0ms); }
+  @keyframes threatin { from { box-shadow: var(--shadow); } }
   /* průvodce prvním tahem: zvířátka, která můžou táhnout, jednou poskočí */
   .cell.hint .pc { animation: hop .52s var(--ease) both; animation-delay: calc(var(--k0, 0ms) + var(--k, 0ms)); }
   .own-x { --pc: var(--ai); --pt: var(--ai-t); }
@@ -983,11 +985,11 @@
       else {
         // co soupeř udělal zůstává první, krátká rada pro začátečníka za tím
         // na nízkém telefonu je pod nadpisem místo jen na jeden řádek: s radou se tah soupeře zkrátí (bez pole odkud)
+        // (průvodce po tahu soupeře mlčí, radí poskočení zvířátek)
         const tip = danger.length ? "Pozor na lva!" : prey ? "Chyť jeho lva!"
-          : coachOn() ? "Klepni na své zvířátko."
-          : game.s.h[me].length && !store.get("zs-tip-drop") ? "Zásobu polož na volné pole." : "";
+          : game.s.h[me].length && !store.get("zs-tip-drop") && !coachOn() ? "Zásobu polož na volné pole." : "";
         const opp = oppMoveText(!!tip);
-        sub = (!opp && coachOn() ? "Klepni na své zvířátko a ukážu ti, kam smí." : "") || [opp, tip].filter(Boolean).join(" ") ||(game.s.h[me].length ? "Táhni zvířátkem, nebo polož něco ze zásoby." : "Tečky na kameni ukazují, kam zvířátko smí.");
+        sub = (!opp && coachOn() && !tip ? "Klepni na své zvířátko a ukážu ti, kam smí." : "") || [opp, tip].filter(Boolean).join(" ") || (game.s.h[me].length ? "Táhni zvířátkem, nebo polož něco ze zásoby." : "Tečky na kameni ukazují, kam zvířátko smí.");
       }
       if (game.count === 2 && !danger.length) sub = "Pozor: tahle pozice už tu jednou byla. Potřetí je remíza.";
     } else if (freeSeat() === opp) { h = "Odkaz ještě nikdo neotevřel."; sub = "Pošli ho do chatu. Jakmile soupeř přijme výzvu, uvidíš to tady."; }
@@ -1309,7 +1311,9 @@
     if (info) {
       const t = play(snap, info);
       animUntil = Date.now() + t;
-      $("board").style.setProperty("--k0", t + "ms");     // strach lva a průvodce naběhnou až po dohrání tahu
+      $("board").style.setProperty("--k0", t + "ms");     // obrys útočníka a průvodce naběhnou až po dohrání tahu
+      // strach lva až po dopadu útočníka (na konci partie výrazy platí hned)
+      if (!game.result && t) document.querySelectorAll("#board .pc.m-fear").forEach(el => { el.classList.remove("m-fear"); setTimeout(() => { if (el.isConnected && !ended()) el.classList.add("m-fear"); }, t); });
       if (game.result && !calm()) {
         h.style.animationDelay = (t + 120) + "ms"; void h.offsetWidth; h.classList.add("slam");
         // dopad razítka deskou otřese a vítězné zvířátko poskočí radostí
@@ -1356,7 +1360,8 @@
   function endBuzz(t) {
     const r = game.result;
     setTimeout(() => buzz(!r.w || !me ? [30] : r.w === me ? [20, 60, 20, 60, 70] : [90]), t + 120);
-    if (calm() || !matchMedia("(max-width: 979px)").matches) return;
+    // telefon na šířku nerolovat: deska by ujela nahoru a razítko i radost vítěze by nebyly vidět
+    if (calm() || !matchMedia("(max-width: 979px)").matches || matchMedia("(max-height: 500px)").matches) return;
     const shot = ++endBuzz.n;
     setTimeout(() => {
       const b = $("endBox");
